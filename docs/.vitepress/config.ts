@@ -5,17 +5,14 @@ export default defineConfig({
   description: "Exploration",
 
   head: [
-    [
-      "link",
-      { rel: "icon", type: "image/svg+xml", href: "/snake-cube-done.jpg" },
-    ],
+    ["link", { rel: "icon", type: "image/svg+xml", href: "/img/favicon.ico" }],
     ["meta", { name: "theme-color", content: "#646cff" }],
   ],
 
   vue: {},
 
   themeConfig: {
-    logo: "/snake-cube-done.jpg",
+    logo: "/img/snake-cube-done.jpg",
 
     socialLinks: [
       {
@@ -29,54 +26,30 @@ export default defineConfig({
       copyright: "Copyright © 2023-present oscar6echo",
     },
 
-    nav: [
-      { text: "Definition", link: "/definition/", activeMatch: "/definition/" },
-      { text: "Search", link: "/search/", activeMatch: "/search/" },
-      { text: "Results", link: "/results/", activeMatch: "/results/" },
-    ],
+    // nav: [
+    //   { text: "", link: "/section/", activeMatch: "/section/" },
+    // ],
 
     sidebar: {
-      "/definition/": [
+      "/section/": [
         {
-          text: "Definition",
+          text: "",
           items: [
             {
-              text: "Snake Cube",
-              link: "/definition/",
+              text: "Definitions",
+              link: "/section/",
             },
             {
-              text: "Examples",
-              link: "/definition/examples",
+              text: "Search",
+              link: "/section/search",
             },
-          ],
-        },
-      ],
-      "/search/": [
-        {
-          text: "Search",
-          items: [
-            {
-              text: "Algorithm",
-              link: "/search/",
-            },
-            {
-              text: "Code",
-              link: "/search/code",
-            },
-          ],
-        },
-      ],
-      "/results/": [
-        {
-          text: "Results",
-          items: [
             {
               text: "Stats",
-              link: "/results/",
+              link: "/section/stats",
             },
             {
               text: "Viewer",
-              link: "/results/viewer",
+              link: "/section/viz",
             },
           ],
         },

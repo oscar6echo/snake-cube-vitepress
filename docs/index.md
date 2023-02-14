@@ -7,19 +7,19 @@ titleTemplate: Home
 hero:
   name: Snake Cube
   text: An Exhautive Search
-  tagline: A search for all possible snake cubes, stats and viz tools
+  tagline: A search for all possible snake cubes, stats and 3D visualisation
   image:
-    src: /snake-cube.png
+    src: /img/snake-cube.png
     alt: missing
   actions:
     - theme: brand
       text: Explore
-      link: /definition/
+      link: /section/
 
 features:
   - icon: ⚡️
-    title: Lightning Fast
-    details: Efficient algo implemented in Go runs in less than 1s.
+    title: Fast Search
+    details: Efficient algo implemented in Go runs full search in less than 1s.
   - icon: 💡
     title: Interesting Stats
     details: Insights into how solutions are distributed in snake cube space.

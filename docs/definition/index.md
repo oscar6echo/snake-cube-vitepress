@@ -1,3 +1,0 @@
-# Snake Cube
-
-TBD

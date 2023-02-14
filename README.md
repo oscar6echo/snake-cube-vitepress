@@ -22,6 +22,8 @@ pnpm run build
 # deploy-ghp.bat
 ```
 
+NOTE: Use [Volar Takeover Mode](https://vuejs.org/guide/typescript/overview.html#volar-takeover-mode).
+
 ## Result
 
-See [https://oscar6echo.github.io/vitepress-snake-cube](https://oscar6echo.github.io/vitepress-snake-cube).
+See [https://oscar6echo.github.io/snake-cube-vitepress](https://oscar6echo.github.io/snake-cube-vitepress).
