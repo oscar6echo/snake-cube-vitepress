@@ -49,6 +49,14 @@ interface ISnakeMisc {
   nbEndFace: number;
   nbEndEdge: number;
   nbEndCorner: number;
+  fracEndCenter: number;
+  fracEndFace: number;
+  fracEndEdge: number;
+  fracEndCorner: number;
+  nbCandidate: number;
+  nbPlausible: number;
+  fracPlausibleOverCandidate: number;
+  fracRealOverPlausible: number;
 }
 
 let started = false;
@@ -297,6 +305,25 @@ const buildSnakeMisc = (snakeSolutions: ISnakeSolutions): ISnakeMisc => {
   const fracEndEdge = nbEndEdge / 2 / nbSol;
   const fracEndCorner = nbEndCorner / 2 / nbSol;
 
+  const nbCandidate = Math.pow(2, 27 - 2) / 2;
+
+  const searchPlausible = (snake: number[]): number => {
+    if (snake.length === 25) return 1;
+    let resStraight: number;
+    if (snake[snake.length - 1] === 0) {
+      resStraight = searchPlausible([...snake, 1]);
+    } else {
+      resStraight = 0;
+    }
+    const resTurn = searchPlausible([...snake, 0]);
+    return resStraight + resTurn;
+  };
+
+  const nbPlausible = (searchPlausible([0]) + searchPlausible([1])) / 2;
+
+  const fracPlausibleOverCandidate = nbPlausible / nbCandidate;
+  const fracRealOverPlausible = nbSeq / nbPlausible;
+
   const misc = {
     nbSeq,
     nbSol,
@@ -308,6 +335,10 @@ const buildSnakeMisc = (snakeSolutions: ISnakeSolutions): ISnakeMisc => {
     fracEndFace,
     fracEndEdge,
     fracEndCorner,
+    nbCandidate,
+    nbPlausible,
+    fracPlausibleOverCandidate,
+    fracRealOverPlausible,
   };
 
   console.timeEnd(timerName);
