@@ -5,7 +5,7 @@ export default defineConfig({
   description: "Exploration",
 
   head: [
-    ["link", { rel: "icon", type: "image/svg+xml", href: "/img/favicon.ico" }],
+    ["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.ico" }],
     ["meta", { name: "theme-color", content: "#646cff" }],
   ],
 

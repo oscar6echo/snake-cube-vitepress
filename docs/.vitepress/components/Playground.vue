@@ -17,7 +17,9 @@
     Increase ({{ count }})
   </button> -->
 
-  <div>Nb solutions: "{{ snakeData?.length }}"</div>
+  <div>Nb sequences: "{{ nbSeq }}"</div>
+  <div>Nb solutions: "{{ nbSol }}"</div>
+
   <div class="w-md flex flex-col items-center">
     <div class="w-6 h-6 i-mdi-alarm text-orange-400 hover:text-teal-400" />
     <div
@@ -32,10 +34,19 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { useSnakeData } from "../composables/useSnakeData";
+import { Snakes, useSnakeData } from "../composables/useSnakeData";
 
 const { snakeData } = useSnakeData();
-const nbSnake = computed(() => (!!snakeData ? snakeData.value.length : 99));
+const nbSeq = computed(() => (!!snakeData.value ? snakeData.value.size : 0));
+const nbSol = computed(() => {
+  if (!snakeData.value) return 0;
+
+  let nbSol = 0;
+  for (const [seqS, v] of snakeData.value as Snakes) {
+    nbSol += v.solutions.length;
+  }
+  return nbSol;
+});
 
 const count = ref(0);
 const onClick = (): void => {

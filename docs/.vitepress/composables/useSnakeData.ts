@@ -8,48 +8,68 @@ type Direction = Array<number>;
 type Path = Array<Array<Array<number>>>;
 type MapCoord = Map<number, Pos>;
 
-interface SnakeRaw {
-  Sequence: Sequence;
-  Direction: Direction;
-  Path: Path;
-  StartPos: number[];
-  Palindrome: Boolean;
-}
-
-interface Snake {
-  sequence: Sequence;
-  direction: Direction;
+interface Solution {
   path: MapCoord;
-  start: number[];
-  palindrome: Boolean;
+  direction: Direction;
+  startPos: Pos;
 }
 
-// shared data across instances so we load only once.
+type SnakesIn = Map<string, Solution[]>;
+
+type Snakes = Map<
+  string,
+  { sequence: Sequence; palindrome: boolean; solutions: Solution[] }
+>;
+
+// shared data across instances soload only once
 const snakeData = ref();
 
-// const dataUrl = `/data-snake-cubes.json`;
-const dataUrl = withBase(`/data-snake-cubes-full.json`);
+const dataUrl = withBase(`/data/solutions.json`);
 
 const useSnakeData = () => {
   onMounted(async () => {
-    console.log("onMounted");
     if (snakeData.value) {
       return;
     }
 
     const result = await fetch(dataUrl);
-
     // console.log(result);
-    const json = await result.json();
-    console.log(json);
 
-    snakeData.value = (json as SnakeRaw[]).map((e) => buildSnake(e));
-    console.log(snakeData.value);
+    const data: SnakesIn = await result.json();
+    // console.log(data);
+
+    const value = buildValue(data);
+    console.log(value);
+
+    snakeData.value = value;
+    // console.log(snakeData.value);
   });
 
   return {
     snakeData,
   };
+};
+
+const buildValue = (data: SnakesIn): Snakes => {
+  console.time("buildValue");
+  const s: Snakes = new Map();
+
+  for (const [seqS, v] of Object.entries(data)) {
+    const seqN = seqS.split("").map((e) => Number(e));
+
+    const revSeqS = seqS.split("").reverse().join("");
+    const palindrome = seqS === revSeqS;
+
+    const solutions = v.map((e) => ({
+      startPos: e.startPos,
+      direction: e.direction,
+      path: buildMapCoord(e.path),
+    }));
+
+    s.set(seqS, { sequence: seqN, palindrome, solutions });
+  }
+  console.timeEnd("buildValue");
+  return s;
 };
 
 const buildMapCoord = (path: Path): MapCoord => {
@@ -64,12 +84,4 @@ const buildMapCoord = (path: Path): MapCoord => {
   return m;
 };
 
-const buildSnake = (snakeRaw: SnakeRaw): Snake => ({
-  sequence: snakeRaw.Sequence,
-  direction: snakeRaw.Direction,
-  path: buildMapCoord(snakeRaw.Path),
-  start: snakeRaw.StartPos,
-  palindrome: snakeRaw.Palindrome,
-});
-
-export { useSnakeData };
+export { useSnakeData, Snakes };
