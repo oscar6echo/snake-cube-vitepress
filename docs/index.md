@@ -27,3 +27,9 @@ features:
     title: Beautiful Viz
     details: Navigate the snake cube solution space and see them in 2D / 3D.
 ---
+
+<script setup lang="ts">
+
+console.log('root index')
+
+</script>

@@ -19,6 +19,7 @@
 
   <div>Nb sequences: "{{ nbSeq }}"</div>
   <div>Nb solutions: "{{ nbSol }}"</div>
+  <div>Nb samples: "{{ nbSamples }}"</div>
 
   <div class="w-md flex flex-col items-center">
     <div class="w-6 h-6 i-mdi-alarm text-orange-400 hover:text-teal-400" />
@@ -34,19 +35,24 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Snakes, useSnakeData } from "../composables/useSnakeData";
+import {
+  ISnakes,
+  useSnakeSamples,
+  useSnakeSolutions,
+} from "../composables/useSnakeData";
 
-const { snakeData } = useSnakeData();
-const nbSeq = computed(() => (!!snakeData.value ? snakeData.value.size : 0));
+const { snakeSolutions } = useSnakeSolutions();
+const { snakeSamples } = useSnakeSamples();
+
+const nbSeq = computed(() => snakeSolutions.value.size);
 const nbSol = computed(() => {
-  if (!snakeData.value) return 0;
-
   let nbSol = 0;
-  for (const [seqS, v] of snakeData.value as Snakes) {
+  for (const [seqS, v] of snakeSolutions.value as ISnakes) {
     nbSol += v.solutions.length;
   }
   return nbSol;
 });
+const nbSamples = computed(() => snakeSamples.value.length);
 
 const count = ref(0);
 const onClick = (): void => {

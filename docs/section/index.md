@@ -21,6 +21,7 @@ The following definition help clarify this document:
 - **straight cubelet**: A **cubelet** linked to previous/next **cubelet** by opposite faces.
 - **end cubelet**: A **cubelet** linked to only one other **cubelet**, positioned at an end.
 - **snake cube**: A chain of 27 **cubelets**, irrespective of its position in space, flat or folded.
+- **snake**: A synonym of **snake cube**.
 - **sequence**: The representation of a **snake cube** as a list of 27 "_0_" or "_1_".  
   EXAMPLE: the sequence for the snake cube above is "001010110111010111101010100".
   | Code | Description |
@@ -35,9 +36,9 @@ The following definition help clarify this document:
   // [x, y, z]
   // axis direction: x -> right, y-> reader, z-> down
   [
-  [[1,16,23],[18,17,22],[19,20,21]],
-  [[2,15,24],[5,6,7],[10,9,8]],
-  [[3,14,25],[4,13,26],[11,12,27]]]
+    [[1,16,23],[18,17,22],[19,20,21]],
+    [[2,15,24],[5,6,7],[10,9,8]],
+    [[3,14,25],[4,13,26],[11,12,27]]]
   ]
   ```
 

@@ -20,6 +20,6 @@ end.
 <script setup>
 import { useData } from 'vitepress'
 
-// const mydata = useData()
-const { page: mydata } = useData()
+const mydata = useData()
+// const { page: mydata } = useData()
 </script>

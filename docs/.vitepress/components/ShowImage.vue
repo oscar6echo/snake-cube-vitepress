@@ -17,7 +17,7 @@
 <script setup lang="ts">
 const props = defineProps({
   img: { type: String, required: true },
-  width: { type: Number, required: true },
+  width: { type: String, required: true },
   caption: { type: String, required: true },
 });
 </script>
