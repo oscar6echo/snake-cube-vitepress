@@ -1,14 +1,24 @@
+---
+toto: azerty
+titi: 22
+---
+
 # Viewer
 
-toto
-<Viewer />
-titi
+TBD
+
+<pre>{{ mydata }}</pre>
 
 ---
 
+<Playground />
+
+:tada:
+
+end.
+
 <script setup>
 import { useData } from 'vitepress'
-import Viewer from '../.vitepress/components/Viewer.vue'
 
 const mydata = useData()
 // const { page: mydata } = useData()
