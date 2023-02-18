@@ -1,61 +1,46 @@
 <template>
-  <div>
-    <div class="sf">
-      <button name="p" type="button" :class="styleIcon" @click="clickPlayPause">
-        <div v-if="!_playing" class="i-fa6-solid:play"></div>
-        <div v-else class="i-fa6-solid:pause"></div>
-      </button>
-      <button name="s" type="button" :class="styleIcon" @click="clickStop">
-        <div class="i-fa6-solid:stop"></div>
-      </button>
-      <button name="l" type="button" :class="styleIcon" @click="clickStepLeft">
-        <div class="i-fa6-solid:backward-step"></div>
-      </button>
-      <button name="r" type="button" :class="styleIcon" @click="clickStepRight">
-        <div class="i-fa6-solid:forward-step"></div>
-      </button>
-      <button name="u" type="button" :class="styleIcon" @click="clickSpeedUp">
-        <div class="i-fa6-solid:chevron-up"></div>
-      </button>
-      <button name="d" type="button" :class="styleIcon" @click="clickSpeedDown">
-        <div class="i-fa6-solid:chevron-down"></div>
-      </button>
-      <button name="w" type="button" :class="styleIcon" @click="clickToggleWay">
-        <div v-if="_forward" class="i-fa6-solid:arrow-right"></div>
-        <div v-else class="i-fa6-solid:arrow-left"></div>
-      </button>
-      <button
-        name="b"
-        type="button"
-        :class="styleIconBounce"
-        @click="clickToggleBounce"
-      >
-        <div class="i-fa-solid:exchange-alt"></div>
-      </button>
-      <button
-        name="a"
-        type="button"
-        :class="styleIconLoop"
-        @click="clickToggleLoop"
-      >
-        <div class="i-fa-solid:redo"></div>
-      </button>
+  <div class="flex items-center h-5">
+    <button type="button" :class="styleIcon" @click="clickPlayPause">
+      <div v-if="!_playing" class="i-fa6-solid:play"></div>
+      <div v-else class="i-fa6-solid:pause"></div>
+    </button>
+    <button type="button" :class="styleIcon" @click="clickStop">
+      <div class="i-fa6-solid:stop"></div>
+    </button>
+    <button type="button" :class="styleIcon" @click="clickStepLeft">
+      <div class="i-fa6-solid:backward-step"></div>
+    </button>
+    <button type="button" :class="styleIcon" @click="clickStepRight">
+      <div class="i-fa6-solid:forward-step"></div>
+    </button>
+    <button type="button" :class="styleIcon" @click="clickSpeedUp">
+      <div class="i-fa6-solid:chevron-up"></div>
+    </button>
+    <button type="button" :class="styleIcon" @click="clickSpeedDown">
+      <div class="i-fa6-solid:chevron-down"></div>
+    </button>
+    <button type="button" :class="styleIcon" @click="clickToggleWay">
+      <div v-if="_forward" class="i-fa6-solid:arrow-right"></div>
+      <div v-else class="i-fa6-solid:arrow-left"></div>
+    </button>
+    <button type="button" :class="styleIconBounce" @click="clickToggleBounce">
+      <div class="i-fa-solid:exchange-alt"></div>
+    </button>
+    <button type="button" :class="styleIconLoop" @click="clickToggleLoop">
+      <div class="i-fa-solid:redo"></div>
+    </button>
 
-      <div style="display: flex; align-items: center">
-        <input
-          name="i"
-          type="range"
-          :min="rangeMin"
-          :max="rangeMax"
-          v-model="rangePos"
-          :step="1"
-          :class="styleRange"
-          :style="widthRange"
-        />
-        <output name="o" :class="styleOutput">{{
-          values[rangePos].text
-        }}</output>
-      </div>
+    <div class="flex align-center">
+      <input
+        type="range"
+        :min="0"
+        :max="rangeMax"
+        v-model="rangePos"
+        :step="1"
+        :class="styleRange"
+        :style="widthRange"
+      />
+      <output name="o" :class="styleOutput">{{ output }}</output>
     </div>
   </div>
 </template>
@@ -74,12 +59,14 @@ const props = defineProps({
   bounce: { type: Boolean, required: false, default: false },
   loop: { type: Boolean, required: false, default: false },
   index: { type: Boolean, required: false, default: false },
+  rangeMin: { type: Number, required: false, default: 1 },
   buttons: { type: Array<string>, required: false, default: [] },
   width: { type: Number, required: false, default: 300 },
   time: { type: Boolean, required: false, default: false },
   debug: { type: Boolean, required: false, default: false },
 });
-const { values, initial, delay } = toRefs(props);
+const { values, initial } = toRefs(props);
+const emit = defineEmits(["update:modelValue"]);
 
 const styleIcon = ref(
   buildStyle([
@@ -107,7 +94,6 @@ const styleRange = ref(buildStyle(["accent-coolgray"]));
 const widthRange = ref("width: 300px;");
 const styleOutput = ref(buildStyle(["ml-2"]));
 
-const rangeMin = ref(0);
 const rangeMax = computed(() => values.value.length - 1);
 const rangePos = ref(0);
 const _playing = ref(false);
@@ -116,9 +102,23 @@ const _forward = ref(true);
 const _bounce = ref(false);
 const _loop = ref(false);
 
-const output = computed(() => props.values[rangePos.value].text);
+const output = computed(() =>
+  values.value && values.value.length ? props.values[rangePos.value].text : ""
+);
 
 watch(initial, () => (rangePos.value = initial.value));
+watch(rangePos, () => {
+  emit(
+    "update:modelValue",
+    props.index ? rangePos.value : props.values[rangePos.value].value
+  );
+});
+watch(values, () => {
+  emit(
+    "update:modelValue",
+    props.index ? rangePos.value : props.values[rangePos.value].value
+  );
+});
 
 onMounted(() => {
   _playing.value = props.autoplay;
@@ -131,7 +131,7 @@ onMounted(() => {
 
 let timerId = null;
 
-const clickPlayPause = () => {
+const clickPlayPause = (): void => {
   console.log("clickPlayPause");
   _playing.value = !_playing.value;
   if (_playing.value) {
@@ -141,12 +141,12 @@ const clickPlayPause = () => {
   }
 };
 
-const walk = () => {
+const walk = (): void => {
   const carryon = step();
   if (carryon) timerId = setTimeout(walk, _delay.value);
 };
 
-const stop = () => {
+const stop = (): void => {
   clearTimeout(timerId);
 };
 
@@ -187,46 +187,38 @@ const step = (): boolean => {
   return true;
 };
 
-const clickStop = () => {
+const clickStop = (): void => {
   clearTimeout(timerId);
   rangePos.value = 0;
   _playing.value = false;
 };
-const clickStepLeft = () => {
+const clickStepLeft = (): void => {
   const _forward_current = _forward.value;
   _forward.value = false;
   step();
   _forward.value = _forward_current;
 };
-const clickStepRight = () => {
+const clickStepRight = (): void => {
   const _forward_current = _forward.value;
   _forward.value = true;
   step();
   _forward.value = _forward_current;
 };
-const clickSpeedUp = () => {
+const clickSpeedUp = (): void => {
   _delay.value /= props.speedFactor;
 };
-const clickSpeedDown = () => {
+const clickSpeedDown = (): void => {
   _delay.value *= props.speedFactor;
 };
-const clickToggleWay = () => {
+const clickToggleWay = (): void => {
   _forward.value = !_forward.value;
 };
-const clickToggleBounce = () => {
+const clickToggleBounce = (): void => {
   _bounce.value = !_bounce.value;
 };
-const clickToggleLoop = () => {
+const clickToggleLoop = (): void => {
   _loop.value = !_loop.value;
 };
 </script>
 
-<style scoped>
-.sf {
-  font: 12px var(--sans-serif);
-  font-variant-numeric: tabular-nums;
-  display: flex;
-  height: 33px;
-  align-items: center;
-}
-</style>
+<style scoped></style>

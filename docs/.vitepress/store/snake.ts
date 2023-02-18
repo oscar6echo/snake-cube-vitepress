@@ -365,29 +365,4 @@ const getPosKind = (pos: Pos): string => {
   }
 };
 
-// const getPosKind = (pos: Pos): string => {
-//   for (let i = 0; i < 3; i++) {
-//     for (let j = 0; j < 3; j++) {
-//       for (let k = 0; k < 3; k++) {
-//         const _i = Math.abs(i - 1);
-//         const _j = Math.abs(j - 1);
-//         const _k = Math.abs(k - 1);
-//         const _s = _i + _j + _k;
-//         if (_s === 0) {
-//           return "O";
-//         }
-//         if (_s === 1) {
-//           return "F";
-//         }
-//         if (_s === 2) {
-//           return "E";
-//         }
-//         if (_s === 3) {
-//           return "C";
-//         }
-//       }
-//     }
-//   }
-// };
-
-export { useSnakeStore, ISnakeStats };
+export { useSnakeStore, ISnakeStats, MapCoord };

@@ -1,7 +1,7 @@
 <template>
-  <div class="flex justify-start mb-2">
+  <div class="flex justify-start items-center mb-2">
     <button :class="styleBtnTxt">Nb Solutions:</button>
-    <select id="select-nbsol" v-model="fNbSol" :class="styleSelect">
+    <select v-model="fNbSol" :class="styleSelect">
       <option
         v-for="(value, i) in nbSolOptions"
         :key="i"
@@ -13,7 +13,7 @@
     </select>
 
     <button :class="styleBtnTxt">Nb Straights:</button>
-    <select id="select-nbstraight" v-model="fNbStraight" :class="styleSelect">
+    <select v-model="fNbStraight" :class="styleSelect">
       <option
         v-for="(value, i) in nbStraightOptions"
         :key="i"
@@ -25,7 +25,7 @@
     </select>
 
     <button :class="styleBtnTxt">Only Palindrome:</button>
-    <select id="select-pal" v-model="fPal" :class="styleSelect">
+    <select v-model="fPal" :class="styleSelect">
       <option
         v-for="(value, i) in [true, false]"
         :key="i"
@@ -37,7 +37,7 @@
     </select>
   </div>
 
-  <div class="flex justify-start mb-2">
+  <div class="flex justify-start items-center mb-2">
     <button :class="styleBtnTxt">Sequence Start:</button>
     <input
       v-model="fSeqStart"
@@ -50,9 +50,9 @@
     </button>
   </div>
 
-  <div class="flex justify-start mb-2">
+  <div class="flex justify-start items-center mb-2">
     <button :class="styleBtnTxt">Select Snake (nb Sol):</button>
-    <select id="select-snake" v-model="selectedSnake" :class="styleSelectSnake">
+    <select v-model="selectedSnake" :class="styleSelectSnake">
       <option
         v-for="(item, i) in snakeOptions"
         :key="i"
@@ -64,21 +64,59 @@
     </select>
 
     <button :class="styleBtnTxt">Sort by:</button>
-    <select id="select-pal" v-model="snakeSort" :class="styleSelectSort">
+    <select v-model="fSnakeSort" :class="styleSelectSort">
       <option
         v-for="(value, i) in ['nb Sol <', 'nb Sol >', 'Lexico <', 'Lexico >']"
         :key="i"
         :value="value"
-        :active="value === snakeSort"
+        :active="value === fSnakeSort"
       >
         {{ value }}
       </option>
     </select>
   </div>
 
+  ---
+
   <br />
 
-  <Player :values="pathSteps" :width="200" />
+  <VizFold :path="selectedPath" :step="pathStepAsNumber" :rotSpeed="rotSpeed" />
+
+  <br />
+  ---
+
+  <br />
+  {{ rotSpeed }}
+  <br />
+  {{ pathStep }}
+  <br />
+  {{ selectedSolution }}
+  <br />
+
+  ---
+
+  <div class="flex justify-start items-center mb-2">
+    <button :class="styleBtnTxt2">Rotation Speed:</button>
+    <RotationControl v-model="rotSpeed" />
+  </div>
+  <div class="flex justify-start items-center mb-2">
+    <button :class="styleBtnTxt2">Path step:</button>
+    <Player
+      v-model="pathStep"
+      :values="pathStepsOptions"
+      :width="200"
+      :index="true"
+    />
+  </div>
+  <div class="flex justify-start items-center mb-2">
+    <button :class="styleBtnTxt2">Solution:</button>
+    <Player
+      v-model="selectedSolution"
+      :values="snakeSolutionsOptions"
+      :width="200"
+      :index="true"
+    />
+  </div>
   <br />
   {{ nbSolOptions }}
   <br />
@@ -93,8 +131,13 @@
 import { computed, ref } from "vue";
 import d3 from "../assets/d3";
 import { buildStyle, fmtNb } from "../common/util";
-import { useSnakeStore } from "../store/snake";
+import { MapCoord, useSnakeStore } from "../store/snake";
 import Player from "./Player.vue";
+import RotationControl from "./RotationControl.vue";
+import VizFold from "./VizFold.vue";
+
+const pathSteps = d3.range(1, 27 + 1);
+const pathStepsOptions = pathSteps.map((e) => ({ value: e, text: String(e) }));
 
 const store = useSnakeStore();
 store.loadData();
@@ -108,6 +151,7 @@ const styleBtnTxt = ref(
   ])
 );
 const styleBtnFiltered = ref(styleBtnTxt.value + " text-left w-40");
+const styleBtnTxt2 = ref(styleBtnTxt.value + " text-left w-36");
 const styleSelect = ref(
   buildStyle([
     "bg-light dark:bg-dark",
@@ -127,7 +171,7 @@ const stylePrefix = ref(
 const styleSelectSnake = ref(
   buildStyle([
     "bg-light dark:bg-dark",
-    "w-61",
+    "w-62",
     "b-solid b-1 b-lightgray dark:b-blue",
     "px-2 ml-0 mr-4",
   ])
@@ -139,8 +183,11 @@ const fNbStraight = ref(null as number);
 const fPal = ref(false);
 const fSeqStart = ref("");
 const selectedSnake = ref("");
-const snakeSort = ref("nb Sol >");
+const fSnakeSort = ref("nb Sol >");
 const nTruncate = ref(200);
+const pathStep = ref(0);
+const rotSpeed = ref(0);
+const selectedSolution = ref(null as number);
 
 const nbSolOptions = computed(() => {
   if (solutionsFiltered.value.size === 0) return [null];
@@ -176,23 +223,23 @@ const snakeOptions = computed(() => {
     const nSol = v.solutions.length;
     _arr.push({ value: seqS, nSol, text: `${seqS} (${nSol})` });
   }
-  if (snakeSort.value === "nb Sol <") {
+  if (fSnakeSort.value === "nb Sol <") {
     arr = _arr.sort((a, b) => d3.ascending(a.nSol, b.nSol));
   }
-  if (snakeSort.value === "nb Sol >") {
+  if (fSnakeSort.value === "nb Sol >") {
     arr = _arr.sort((a, b) => d3.descending(a.nSol, b.nSol));
   }
-  if (snakeSort.value === "Lexico <") {
+  if (fSnakeSort.value === "Lexico <") {
     arr = _arr.sort((a, b) => d3.ascending(a.value, b.value));
   }
-  if (snakeSort.value === "Lexico >") {
+  if (fSnakeSort.value === "Lexico >") {
     arr = _arr.sort((a, b) => d3.descending(a.value, b.value));
   }
 
   if (arr.length < nTruncate.value) return arr;
 
   const last = {
-    value: "bogus",
+    value: "",
     text: `truncated at ${nTruncate.value} snakes`,
   };
   return [...arr.slice(0, nTruncate.value), last];
@@ -223,16 +270,37 @@ const solutionsFiltered = computed(() => {
   return m;
 });
 
-const pathSteps = d3.range(27).map((e) => ({ value: e, text: String(e) }));
+const snakeSolutions = computed(() => {
+  if (!solutionsFiltered.value || solutionsFiltered.value.size === 0) return [];
+  if (!selectedSnake.value) return [];
 
-// watch(fPal, () => {
-//   console.log(fPal.value);
-// });
+  console.log(solutionsFiltered.value);
+  console.log(selectedSnake.value);
+  const { solutions } = solutionsFiltered.value.get(selectedSnake.value);
+  return d3.range(solutions.length);
+});
+
+const snakeSolutionsOptions = computed(() => {
+  if (!solutionsFiltered.value || solutionsFiltered.value.size === 0) return [];
+  if (!selectedSnake.value) return [];
+
+  const { solutions } = solutionsFiltered.value.get(selectedSnake.value);
+  return solutions.map((e, i) => ({
+    value: e.path,
+    text: `${i + 1}/${solutions.length}`,
+  }));
+});
+
+const selectedPath = computed((): MapCoord => {
+  let m: MapCoord = new Map();
+  //   m.set(1, [0, 0, 0]);
+  if (!solutionsFiltered.value || solutionsFiltered.value.size === 0) return m;
+  if (!selectedSnake.value) return m;
+
+  return snakeSolutionsOptions.value[selectedSolution.value].value;
+});
+
+const pathStepAsNumber = computed(() => Number(pathStep.value));
 </script>
 
-<style scoped>
-.btn-no-click {
-  pointer-events: none;
-  border-color: lightgrey;
-}
-</style>
+<style scoped></style>
