@@ -78,7 +78,7 @@
 
   <br />
 
-  <Player :values="pathSteps" />
+  <Player :values="pathSteps" :width="200" />
   <br />
   {{ nbSolOptions }}
   <br />

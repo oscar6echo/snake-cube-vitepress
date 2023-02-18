@@ -2,7 +2,8 @@
   <div>
     <div class="sf">
       <button name="p" type="button" :class="styleIcon" @click="clickPlayPause">
-        <div class="i-fa6-solid:play"></div>
+        <div v-if="!_playing" class="i-fa6-solid:play"></div>
+        <div v-else class="i-fa6-solid:pause"></div>
       </button>
       <button name="s" type="button" :class="styleIcon" @click="clickStop">
         <div class="i-fa6-solid:stop"></div>
@@ -19,18 +20,14 @@
       <button name="d" type="button" :class="styleIcon" @click="clickSpeedDown">
         <div class="i-fa6-solid:chevron-down"></div>
       </button>
-      <button
-        name="w"
-        type="button"
-        :class="styleIcon"
-        @click="clickToggleDirection"
-      >
-        <div class="i-fa6-solid:arrow-right"></div>
+      <button name="w" type="button" :class="styleIcon" @click="clickToggleWay">
+        <div v-if="_forward" class="i-fa6-solid:arrow-right"></div>
+        <div v-else class="i-fa6-solid:arrow-left"></div>
       </button>
       <button
         name="b"
         type="button"
-        :class="styleIcon"
+        :class="styleIconBounce"
         @click="clickToggleBounce"
       >
         <div class="i-fa-solid:exchange-alt"></div>
@@ -38,8 +35,8 @@
       <button
         name="a"
         type="button"
-        :class="styleIcon"
-        @click="clickToggleRedo"
+        :class="styleIconLoop"
+        @click="clickToggleLoop"
       >
         <div class="i-fa-solid:redo"></div>
       </button>
@@ -51,8 +48,9 @@
           :min="rangeMin"
           :max="rangeMax"
           v-model="rangePos"
-          :step="rangeStep"
+          :step="1"
           :class="styleRange"
+          :style="widthRange"
         />
         <output name="o" :class="styleOutput">{{
           values[rangePos].text
@@ -63,68 +61,163 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, toRefs, watch } from "vue";
 import { buildStyle } from "../common/util";
 
 const props = defineProps({
   values: { type: Array<{ value: any; text: string }>, required: true },
-  index: { type: Boolean, required: false, default: false },
   initial: { type: Number, required: false, default: 0 },
-  delay: { type: Number, required: false, default: 1000 / 60 },
-  autoplay: { type: Boolean, required: false, default: true },
+  forward: { type: Boolean, required: false, default: true },
+  delay: { type: Number, required: false, default: 400 },
+  speedFactor: { type: Number, required: false, default: 1.5 },
+  autoplay: { type: Boolean, required: false, default: false },
+  bounce: { type: Boolean, required: false, default: false },
   loop: { type: Boolean, required: false, default: false },
-  alternate: { type: Boolean, required: false, default: false },
+  index: { type: Boolean, required: false, default: false },
+  buttons: { type: Array<string>, required: false, default: [] },
   width: { type: Number, required: false, default: 300 },
   time: { type: Boolean, required: false, default: false },
-  speedFactor: { type: Number, required: false, default: 1.5 },
-  show: { type: Array<string>, required: false, default: [] },
   debug: { type: Boolean, required: false, default: false },
 });
+const { values, initial, delay } = toRefs(props);
 
 const styleIcon = ref(
   buildStyle([
     "flex justify-center items-center w-5 h-5 mr-1",
     "b-1 b-solid b-gray dark:b-gray",
     "bg-light dark:bg-dark",
-    "hover:bg-truegray",
+    "hover:filter-sepia",
   ])
 );
-const styleRange = ref(buildStyle(["w-50", "accent-coolgray"]));
+const styleIconOn = ref(
+  buildStyle([
+    "flex justify-center items-center w-5 h-5 mr-1",
+    "b-1 b-solid b-gray dark:b-gray",
+    "bg-opacity-60 bg-truegray dark:bg-truegray",
+    "hover:filter-sepia",
+  ])
+);
+const styleIconBounce = computed(() =>
+  _bounce.value ? styleIconOn.value : styleIcon.value
+);
+const styleIconLoop = computed(() =>
+  _loop.value ? styleIconOn.value : styleIcon.value
+);
+const styleRange = ref(buildStyle(["accent-coolgray"]));
+const widthRange = ref("width: 300px;");
 const styleOutput = ref(buildStyle(["ml-2"]));
 
 const rangeMin = ref(0);
-const rangeMax = ref(100);
-const rangeStep = ref(1);
+const rangeMax = computed(() => values.value.length - 1);
 const rangePos = ref(0);
+const _playing = ref(false);
+const _delay = ref(100);
+const _forward = ref(true);
+const _bounce = ref(false);
+const _loop = ref(false);
 
 const output = computed(() => props.values[rangePos.value].text);
 
+watch(initial, () => (rangePos.value = initial.value));
+
+onMounted(() => {
+  _playing.value = props.autoplay;
+  _forward.value = props.forward;
+  _delay.value = props.delay;
+  _bounce.value = props.bounce;
+  _loop.value = props.loop;
+  widthRange.value = `width: ${props.width}px;`;
+});
+
+let timerId = null;
+
 const clickPlayPause = () => {
   console.log("clickPlayPause");
+  _playing.value = !_playing.value;
+  if (_playing.value) {
+    walk();
+  } else {
+    stop();
+  }
 };
+
+const walk = () => {
+  const carryon = step();
+  if (carryon) timerId = setTimeout(walk, _delay.value);
+};
+
+const stop = () => {
+  clearTimeout(timerId);
+};
+
+const step = (): boolean => {
+  if (_forward.value) {
+    if (rangePos.value < rangeMax.value) {
+      rangePos.value += 1;
+    } else {
+      if (_loop.value) {
+        if (_bounce.value) {
+          rangePos.value = rangeMax.value - 1;
+          _forward.value = false;
+        } else {
+          rangePos.value = 0;
+        }
+      } else {
+        _playing.value = false;
+        return false;
+      }
+    }
+  } else {
+    if (rangePos.value > 0) {
+      rangePos.value -= 1;
+    } else {
+      if (_loop.value) {
+        if (_bounce.value) {
+          rangePos.value = 1;
+          _forward.value = true;
+        } else {
+          rangePos.value = rangeMax.value;
+        }
+      } else {
+        _playing.value = false;
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 const clickStop = () => {
-  console.log("clickStop");
+  clearTimeout(timerId);
+  rangePos.value = 0;
+  _playing.value = false;
 };
 const clickStepLeft = () => {
-  console.log("clickStepLeft");
+  const _forward_current = _forward.value;
+  _forward.value = false;
+  step();
+  _forward.value = _forward_current;
 };
 const clickStepRight = () => {
-  console.log("clickStepRight");
+  const _forward_current = _forward.value;
+  _forward.value = true;
+  step();
+  _forward.value = _forward_current;
 };
 const clickSpeedUp = () => {
-  console.log("clickSpeedUp");
+  _delay.value /= props.speedFactor;
 };
 const clickSpeedDown = () => {
-  console.log("clickSpeedDown");
+  _delay.value *= props.speedFactor;
 };
-const clickToggleDirection = () => {
-  console.log("clickToggleDirection");
+const clickToggleWay = () => {
+  _forward.value = !_forward.value;
 };
 const clickToggleBounce = () => {
-  console.log("clickToggleBounce");
+  _bounce.value = !_bounce.value;
 };
-const clickToggleRedo = () => {
-  console.log("clickToggleRedo");
+const clickToggleLoop = () => {
+  _loop.value = !_loop.value;
 };
 </script>
 
@@ -135,14 +228,5 @@ const clickToggleRedo = () => {
   display: flex;
   height: 33px;
   align-items: center;
-}
-
-.sb {
-  margin-right: 0.3em;
-  width: 2em;
-  border-radius: 0;
-  background-color: #f5f5f5;
-  border: 1px solid #bbb;
-  outline: none;
 }
 </style>
