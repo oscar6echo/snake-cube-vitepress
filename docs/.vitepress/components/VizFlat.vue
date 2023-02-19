@@ -1,17 +1,25 @@
 <template>
   <div>
     <canvas
-      v-show="!isDefinedPath"
+      v-show="!isDefinedSeq"
       ref="container2d"
       class="mt-5 mb-2 b-1 b-solid b-truegray-900 dark:b-truegray-600"
       :style="styleCanvas"
     ></canvas>
     <canvas
-      v-show="isDefinedPath"
+      v-show="isDefinedSeq"
       ref="container3d"
       class="mt-5 mb-2 b-1 b-solid b-truegray-900 dark:b-truegray-600"
       :style="styleCanvas"
     ></canvas>
+
+    <!-- <br />
+    {{ path }}
+    <br />
+    {{ step }}
+    <br />
+    {{ rotSpeed }}
+    <br /> -->
   </div>
 </template>
 
@@ -20,30 +28,24 @@ import { computed, onMounted, PropType, ref, toRefs, watch } from "vue";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { Line2 } from "three/examples/jsm/lines/Line2";
-import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 
 import d3 from "../assets/d3";
-import { MapCoord, Pos } from "../store/snake";
+import { Sequence } from "../store/snake";
 
 const props = defineProps({
-  path: { type: Object as PropType<MapCoord>, required: true },
-  step: { type: Number, required: false, default: 26 },
-  curvy: { type: Boolean, required: false, default: false },
-  rotSpeed: { type: Number, required: false, default: 1 },
-  rotUnit: { type: Number, required: false, default: 2 }, // deg per sec ?
+  seq: { type: Object as PropType<Sequence>, required: true },
   width: { type: Number, required: false, default: 600 },
-  height: { type: Number, required: false, default: 600 },
+  height: { type: Number, required: false, default: 250 },
 });
-const { path, step, curvy, rotSpeed } = toRefs(props);
+const { seq } = toRefs(props);
 
 const styleCanvas = ref(`width: ${props.width}px; height: ${props.height}px;`);
 
 const container2d = ref(null);
 const container3d = ref(null);
 
-const isDefinedPath = computed(() => path.value.size > 0);
+const isDefinedSeq = computed(() => seq.value.length > 0);
 
 let renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
@@ -98,29 +100,23 @@ const T = S / 7;
 const scale = (c: number) => S * (c - 1);
 
 const addSnakeToScene = (snake: ISnake) => {
-  const { line, cubelets } = snake;
-  if (line) scene.add(line);
+  const { cubelets } = snake;
   cubelets.forEach((e) => scene.add(e));
 };
 
 const removeSnakeFromScene = () => {
-  const line = scene.getObjectByName("snake-line");
-  scene.remove(line);
-
   d3.range(1, 27 + 1).forEach((i) => {
     const cubelet = scene.getObjectByName(`snake-cubelet-${i}`);
-    if (cubelet) scene.remove(cubelet);
+    scene.remove(cubelet);
   });
 };
 
 interface ISnake {
-  line: Line2;
   cubelets: THREE.Group[];
 }
 
 const buildSnake = (): ISnake => {
   const positions = [];
-  const colors = [];
 
   const points = d3
     .range(1, path.value.size + 1)
@@ -137,57 +133,12 @@ const buildSnake = (): ISnake => {
 
   const cubelets = points.map((e, i) => buildCube(e, i + 1));
 
-  let line: Line2 | null;
-
-  if (points.length > 1) {
-    const spline = new THREE.CatmullRomCurve3(points);
-
-    let divisions: number;
-    if (curvy.value) {
-      divisions = Math.round(12 * points.length);
-    } else {
-      divisions = Math.round(points.length - 1);
-    }
-    const point = new THREE.Vector3();
-
-    const interpol = d3.interpolateHslLong("red", "blue");
-
-    for (let i = 0, l = divisions; i <= l; i++) {
-      const t = i / l;
-      spline.getPoint(t, point);
-      positions.push(point.x, point.y, point.z);
-      const c = d3.hsl(interpol(t)).rgb();
-      colors.push(c.r / 255, c.g / 255, c.b / 255);
-    }
-
-    const geometry = new LineGeometry();
-    geometry.setPositions(positions);
-    geometry.setColors(colors);
-
-    matLine = new LineMaterial({
-      //   color: 0xffffff,
-      linewidth: 10,
-      vertexColors: true,
-      dashed: false,
-      alphaToCoverage: false,
-    });
-
-    line = new Line2(geometry, matLine);
-    line.name = "snake-line";
-    line.computeLineDistances();
-    line.scale.set(1, 1, 1);
-  } else {
-    line = null;
-  }
-
-  return { line, cubelets };
+  return { cubelets };
 };
 
 const buildCube = (vec: THREE.Vector3, no: number) => {
   const geometry = new THREE.BoxGeometry(T, T, T);
-  const faceColor = "#0c4a6e";
-  //   const faceColor = "#156289";
-  const material = buildFaceMaterial(faceColor, String(no));
+  const material = buildFaceMaterial("#156289", String(no));
 
   const cube = new THREE.Mesh(geometry, material);
 
@@ -272,11 +223,6 @@ const maxFPS = 60;
 const timeStep = 1000 / maxFPS;
 let lastFrameTimeMs = 0;
 
-const axisY = new THREE.Vector3(0, 1, 0).normalize();
-const rad = computed(
-  () => (rotSpeed.value * props.rotUnit * (2 * Math.PI)) / 360 / timeStep
-);
-
 const vizLoop = (timestamp: number) => {
   if (timestamp < lastFrameTimeMs + timeStep) {
     requestAnimationFrame(vizLoop);
@@ -287,14 +233,12 @@ const vizLoop = (timestamp: number) => {
   matLine.resolution.set(rendererWidth, rendererHeight); // resolution of the viewport
   renderer.render(scene, camera);
 
-  scene.rotateOnAxis(axisY, rad.value);
-
   window.requestAnimationFrame(vizLoop);
 };
 
 const update = () => {
   removeSnakeFromScene();
-  if (isDefinedPath.value) {
+  if (isDefinedSeq.value) {
     const snake = buildSnake();
     addSnakeToScene(snake);
     vizLoop(0);
@@ -306,17 +250,8 @@ onMounted(() => {
   init();
 });
 
-watch(path, () => {
-  if (!isDefinedPath.value) return;
-  update();
-});
-
-watch(step, () => {
-  if (!isDefinedPath.value) return;
-  update();
-});
-watch(curvy, () => {
-  if (!isDefinedPath.value) return;
+watch(seq, () => {
+  if (!isDefinedSeq.value) return;
   update();
 });
 </script>

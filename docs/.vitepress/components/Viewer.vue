@@ -76,11 +76,28 @@
     </select>
   </div>
 
-  <VizFold :path="selectedPath" :step="pathStep" :rotSpeed="rotSpeed" />
+  <VizFold
+    :path="selectedPath"
+    :step="pathStep"
+    :curvy="pathCurvy"
+    :rotSpeed="rotSpeed"
+  />
 
   <div class="flex justify-start items-center mb-2">
     <button :class="styleBtnTxt2">Rotation Speed:</button>
-    <RotationControl v-model="rotSpeed" />
+    <ButtonRotation v-model="rotSpeed" class="mr-4" />
+
+    <button :class="styleBtnTxt">Curvyy Path:</button>
+    <select v-model="pathCurvy" :class="styleSelect">
+      <option
+        v-for="(value, i) in [true, false]"
+        :key="i"
+        :value="value"
+        :active="value === pathCurvy"
+      >
+        {{ value }}
+      </option>
+    </select>
   </div>
   <div class="flex justify-start items-center mb-2">
     <button :class="styleBtnTxt2">Path step:</button>
@@ -125,8 +142,8 @@ import { computed, ref } from "vue";
 import d3 from "../assets/d3";
 import { buildStyle, fmtNb } from "../common/util";
 import { MapCoord, useSnakeStore } from "../store/snake";
+import ButtonRotation from "./ButtonRotation.vue";
 import Player from "./Player.vue";
-import RotationControl from "./RotationControl.vue";
 import VizFold from "./VizFold.vue";
 
 const pathSteps = d3.range(1, 27 + 1);
@@ -177,8 +194,9 @@ const fPal = ref(false);
 const fSeqStart = ref("");
 const selectedSnake = ref("");
 const fSnakeSort = ref("nb Sol >");
-const nTruncate = ref(200);
+const nTruncate = ref(2000);
 const pathStep = ref(26);
+const pathCurvy = ref(false);
 const rotSpeed = ref(1);
 const selectedSolution = ref(0 as number);
 

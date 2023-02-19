@@ -38,7 +38,7 @@ const styleIcon = ref(
   ])
 );
 
-const _rotSpeed = ref(5);
+const _rotSpeed = ref(0);
 
 onMounted(() => {
   _rotSpeed.value = modelValue.value;
