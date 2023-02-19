@@ -76,6 +76,8 @@
     </select>
   </div>
 
+  <VizFlat :seq="selectedSnake" />
+
   <VizFold
     :path="selectedPath"
     :step="pathStep"
@@ -118,7 +120,7 @@
       :index="true"
     />
   </div>
-
+  <!-- 
   <br />
   {{ rotSpeed }}
   <br />
@@ -134,7 +136,7 @@
   <br />
   {{ solutionsFiltered.size }}
   <br />
-  {{ selectedSnake }}
+  {{ selectedSnake }} -->
 </template>
 
 <script setup lang="ts">
@@ -144,6 +146,7 @@ import { buildStyle, fmtNb } from "../common/util";
 import { MapCoord, useSnakeStore } from "../store/snake";
 import ButtonRotation from "./ButtonRotation.vue";
 import Player from "./Player.vue";
+import VizFlat from "./VizFlat.vue";
 import VizFold from "./VizFold.vue";
 
 const pathSteps = d3.range(1, 27 + 1);

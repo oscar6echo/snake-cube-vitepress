@@ -12,31 +12,22 @@
       class="mt-5 mb-2 b-1 b-solid b-truegray-900 dark:b-truegray-600"
       :style="styleCanvas"
     ></canvas>
-
-    <!-- <br />
-    {{ path }}
-    <br />
-    {{ step }}
-    <br />
-    {{ rotSpeed }}
-    <br /> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, PropType, ref, toRefs, watch } from "vue";
+import { computed, onMounted, ref, toRefs, watch } from "vue";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 
 import d3 from "../assets/d3";
-import { Sequence } from "../store/snake";
+import { buildCube, initMsg } from "../common/threejs";
 
 const props = defineProps({
-  seq: { type: Object as PropType<Sequence>, required: true },
+  seq: { type: String, required: true },
   width: { type: Number, required: false, default: 600 },
-  height: { type: Number, required: false, default: 250 },
+  height: { type: Number, required: false, default: 150 },
 });
 const { seq } = toRefs(props);
 
@@ -45,15 +36,21 @@ const styleCanvas = ref(`width: ${props.width}px; height: ${props.height}px;`);
 const container2d = ref(null);
 const container3d = ref(null);
 
-const isDefinedSeq = computed(() => seq.value.length > 0);
+const _seq = computed(() => {
+  if (seq.value.length === 0) return null;
+
+  return seq.value.split("").map((e) => Number(e));
+});
+const isDefinedSeq = computed(() => _seq.value && _seq.value.length > 0);
 
 let renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
   camera: THREE.PerspectiveCamera,
-  controls: OrbitControls,
-  matLine: LineMaterial;
+  controls: OrbitControls;
 
 let rendererWidth: number, rendererHeight: number;
+
+let centerX: number, centerY: number, endX: number, endY: number;
 
 const init = () => {
   renderer = new THREE.WebGLRenderer({
@@ -70,34 +67,18 @@ const init = () => {
 
   scene = new THREE.Scene();
 
-  camera = new THREE.PerspectiveCamera(33, 1, 1, 100);
-  camera.position.set(-35, 25, 50);
+  camera = new THREE.PerspectiveCamera(35, 1, 1, 1000);
+  camera.position.set(0, 0, 90);
+  camera.aspect = rendererWidth / rendererHeight;
+  camera.updateProjectionMatrix();
 
   controls = new OrbitControls(camera, renderer.domElement);
-  controls.minDistance = 5;
-  controls.maxDistance = 80;
-};
-
-const initMsg = () => {
-  const canvas = container2d.value as HTMLCanvasElement;
-  canvas.width = canvas.getBoundingClientRect().width;
-  canvas.height = canvas.getBoundingClientRect().height;
-
-  var ctx = canvas.getContext("2d");
-
-  const x = canvas.width / 2;
-  const y = canvas.height / 2;
-
-  ctx.fillStyle = "red";
-  ctx.font = "25px mono";
-
-  ctx.textAlign = "center";
-  ctx.fillText("Select Snake", x, y);
+  controls.minDistance = 15;
+  controls.maxDistance = 110;
 };
 
 const S = 10;
-const T = S / 7;
-const scale = (c: number) => S * (c - 1);
+const T = S / 1.2;
 
 const addSnakeToScene = (snake: ISnake) => {
   const { cubelets } = snake;
@@ -116,107 +97,57 @@ interface ISnake {
 }
 
 const buildSnake = (): ISnake => {
-  const positions = [];
+  const _points = [{ x: 0, y: 0, idx: 1 }];
+  let x = 0;
+  let y = 0;
+  let isIncrX = true;
 
-  const points = d3
-    .range(1, path.value.size + 1)
-    .filter((i) => i <= step.value + 1)
-    .map((k) => {
-      const pos = path.value.get(k) as Pos;
-      const point = new THREE.Vector3(
-        scale(pos[0]),
-        scale(pos[1]),
-        scale(pos[2])
-      );
-      return point;
-    });
+  _seq.value.slice(0, -1).forEach((e, i) => {
+    if (e === 1) {
+      isIncrX = !isIncrX;
+    }
+    if (isIncrX) {
+      x += 1;
+    } else {
+      y += 1;
+    }
+    const p = { x, y, idx: i + 2 };
+    _points.push(p);
+    if (i === 13) {
+      centerX = x;
+      centerY = y;
+    }
+  });
+  endX = _points[_points.length - 1].x;
+  endY = _points[_points.length - 1].y;
 
-  const cubelets = points.map((e, i) => buildCube(e, i + 1));
+  const scaleX = (x: number) => S * (x - centerX);
+  const scaleY = (y: number) => S * (y - centerY);
+
+  const points = _points.map(
+    (e) => new THREE.Vector3(scaleX(e.x), scaleY(e.y), 0)
+  );
+
+  const cubelets = points.map((e, i) => buildCube(e, i + 1, T));
 
   return { cubelets };
 };
 
-const buildCube = (vec: THREE.Vector3, no: number) => {
-  const geometry = new THREE.BoxGeometry(T, T, T);
-  const material = buildFaceMaterial("#156289", String(no));
+const rotateScene = () => {
+  const axisY = new THREE.Vector3(0, 0, 1).normalize();
+  scene.setRotationFromAxisAngle(axisY, 0);
 
-  const cube = new THREE.Mesh(geometry, material);
+  const rad = -(Math.PI / 4) * (endY / endX);
+  scene.rotateOnAxis(axisY, rad);
 
-  const edges = new THREE.EdgesGeometry(geometry);
-  const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0xffffff,
-    transparent: false,
-    opacity: 0.8,
-    linewidth: 1,
-  });
-  const line = new THREE.LineSegments(edges, lineMaterial);
+  scene.translateOnAxis(scene.position.normalize(), -scene.position.length());
 
-  const group = new THREE.Group();
-  group.add(cube);
-  group.add(line);
-
-  group.position.x = vec.x;
-  group.position.y = vec.y;
-  group.position.z = vec.z;
-
-  group.name = `snake-cubelet-${no}`;
-  return group;
-};
-
-const buildFaceMaterial = (
-  color: string,
-  text: string
-): THREE.MeshBasicMaterial => {
-  const ctx = document
-    .createElement("canvas")
-    .getContext("2d") as CanvasRenderingContext2D;
-  const size = 200;
-  const fontSize = 190;
-  ctx.canvas.width = size;
-  ctx.canvas.height = size;
-
-  drawFacelet(ctx, { x: 0, y: 0 }, size, fontSize, color, text);
-
-  const texture = new THREE.CanvasTexture(ctx.canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.wrapS = THREE.ClampToEdgeWrapping;
-  texture.wrapT = THREE.ClampToEdgeWrapping;
-
-  const mat = new THREE.MeshBasicMaterial({
-    map: texture,
-    side: THREE.DoubleSide,
-    transparent: false,
-    depthWrite: true,
-  });
-  return mat;
-};
-
-const drawFacelet = (
-  ctx: CanvasRenderingContext2D,
-  pos: { x: number; y: number },
-  size: number,
-  fontSize: number,
-  color: string,
-  text: string
-) => {
-  ctx.save();
-  ctx.translate(pos.x, pos.y);
-
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, size, size);
-
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.translate(size / 2, 0);
-
-  ctx.font = `${fontSize}px serif`;
-
-  ctx.fillStyle = "white";
-
-  ctx.fillText(text, 0, size / 2);
-  ctx.restore();
-
-  return ctx.canvas;
+  const translateAxis = new THREE.Vector3(
+    centerX - endX / 2,
+    centerY - endY / 2,
+    0
+  );
+  scene.translateOnAxis(translateAxis.normalize(), S * translateAxis.length());
 };
 
 const maxFPS = 60;
@@ -230,7 +161,6 @@ const vizLoop = (timestamp: number) => {
   }
   lastFrameTimeMs = timestamp;
 
-  matLine.resolution.set(rendererWidth, rendererHeight); // resolution of the viewport
   renderer.render(scene, camera);
 
   window.requestAnimationFrame(vizLoop);
@@ -241,12 +171,13 @@ const update = () => {
   if (isDefinedSeq.value) {
     const snake = buildSnake();
     addSnakeToScene(snake);
+    rotateScene();
     vizLoop(0);
   }
 };
 
 onMounted(() => {
-  initMsg();
+  initMsg(container2d.value);
   init();
 });
 

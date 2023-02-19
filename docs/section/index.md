@@ -60,3 +60,5 @@ The following definition help clarify this document:
 
   - A **path**
   - A **start position** and a **direction**.
+
+- **palindrome:**: A snake which sequence is the same as its reverse.

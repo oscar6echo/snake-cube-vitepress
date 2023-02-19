@@ -72,6 +72,7 @@ In other words, plausible candidates make it quite often.
 import { computed, ref } from 'vue'
 import { useSnakeStore } from '../.vitepress/store/snake'
 import { fmtNb, fmtPct } from '../.vitepress/common/util'
+import StatsTable from  '../.vitepress/components/StatsTable.vue'
 
 const store = useSnakeStore()
 store.loadData()
