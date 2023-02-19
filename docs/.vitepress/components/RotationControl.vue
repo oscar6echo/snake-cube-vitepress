@@ -18,14 +18,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, toRefs, watch } from "vue";
 import { buildStyle } from "../common/util";
 
 const props = defineProps({
-  rotSpeed: { type: Number, required: false, default: 0 },
-  speedUnit: { type: Number, required: false, default: 5 }, // degre per sec
+  modelValue: { type: Number, required: true, default: 0 }, // rot speed
   nbStep: { type: Number, required: false, default: 10 },
 });
+const { modelValue } = toRefs(props);
 const emit = defineEmits(["update:modelValue"]);
 
 const styleIcon = ref(
@@ -38,17 +38,19 @@ const styleIcon = ref(
   ])
 );
 
-const _rotSpeed = ref(0);
+const _rotSpeed = ref(5);
+
+onMounted(() => {
+  _rotSpeed.value = modelValue.value;
+});
+
+watch(modelValue, () => {
+  _rotSpeed.value = modelValue.value;
+});
 
 watch(_rotSpeed, () => {
   emit("update:modelValue", _rotSpeed.value);
 });
-
-onMounted(() => {
-  _rotSpeed.value = props.rotSpeed;
-});
-
-let timerId = null;
 
 const clickRotPlus = () => {
   if (_rotSpeed.value < props.nbStep - 1) _rotSpeed.value += 1;

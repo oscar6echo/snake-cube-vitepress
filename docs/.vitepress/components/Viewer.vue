@@ -76,24 +76,7 @@
     </select>
   </div>
 
-  ---
-
-  <br />
-
-  <VizFold :path="selectedPath" :step="pathStepAsNumber" :rotSpeed="rotSpeed" />
-
-  <br />
-  ---
-
-  <br />
-  {{ rotSpeed }}
-  <br />
-  {{ pathStep }}
-  <br />
-  {{ selectedSolution }}
-  <br />
-
-  ---
+  <VizFold :path="selectedPath" :step="pathStep" :rotSpeed="rotSpeed" />
 
   <div class="flex justify-start items-center mb-2">
     <button :class="styleBtnTxt2">Rotation Speed:</button>
@@ -106,6 +89,7 @@
       :values="pathStepsOptions"
       :width="200"
       :index="true"
+      :initial.number="26"
     />
   </div>
   <div class="flex justify-start items-center mb-2">
@@ -117,6 +101,15 @@
       :index="true"
     />
   </div>
+
+  <br />
+  {{ rotSpeed }}
+  <br />
+  {{ pathStep }}
+  <br />
+  {{ selectedSolution }}
+  <br />
+
   <br />
   {{ nbSolOptions }}
   <br />
@@ -185,9 +178,9 @@ const fSeqStart = ref("");
 const selectedSnake = ref("");
 const fSnakeSort = ref("nb Sol >");
 const nTruncate = ref(200);
-const pathStep = ref(0);
-const rotSpeed = ref(0);
-const selectedSolution = ref(null as number);
+const pathStep = ref(26);
+const rotSpeed = ref(1);
+const selectedSolution = ref(0 as number);
 
 const nbSolOptions = computed(() => {
   if (solutionsFiltered.value.size === 0) return [null];
@@ -238,11 +231,11 @@ const snakeOptions = computed(() => {
 
   if (arr.length < nTruncate.value) return arr;
 
-  const last = {
+  const first = {
     value: "",
     text: `truncated at ${nTruncate.value} snakes`,
   };
-  return [...arr.slice(0, nTruncate.value), last];
+  return [first, ...arr.slice(0, nTruncate.value)];
 });
 
 const solutionsFiltered = computed(() => {
@@ -270,16 +263,6 @@ const solutionsFiltered = computed(() => {
   return m;
 });
 
-const snakeSolutions = computed(() => {
-  if (!solutionsFiltered.value || solutionsFiltered.value.size === 0) return [];
-  if (!selectedSnake.value) return [];
-
-  console.log(solutionsFiltered.value);
-  console.log(selectedSnake.value);
-  const { solutions } = solutionsFiltered.value.get(selectedSnake.value);
-  return d3.range(solutions.length);
-});
-
 const snakeSolutionsOptions = computed(() => {
   if (!solutionsFiltered.value || solutionsFiltered.value.size === 0) return [];
   if (!selectedSnake.value) return [];
@@ -293,14 +276,11 @@ const snakeSolutionsOptions = computed(() => {
 
 const selectedPath = computed((): MapCoord => {
   let m: MapCoord = new Map();
-  //   m.set(1, [0, 0, 0]);
   if (!solutionsFiltered.value || solutionsFiltered.value.size === 0) return m;
   if (!selectedSnake.value) return m;
 
   return snakeSolutionsOptions.value[selectedSolution.value].value;
 });
-
-const pathStepAsNumber = computed(() => Number(pathStep.value));
 </script>
 
 <style scoped></style>

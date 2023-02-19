@@ -365,4 +365,4 @@ const getPosKind = (pos: Pos): string => {
   }
 };
 
-export { useSnakeStore, ISnakeStats, MapCoord };
+export { useSnakeStore, ISnakeStats, MapCoord, Pos };

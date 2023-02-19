@@ -7,4 +7,6 @@ const buildStyle = (arr: string[]): string => {
   return arr.map((e) => e.trim()).join(" ");
 };
 
-export { fmtNb, fmtPct, buildStyle };
+const rndUuid = () => String(Math.floor(Math.random() * 1e6));
+
+export { fmtNb, fmtPct, buildStyle, rndUuid };

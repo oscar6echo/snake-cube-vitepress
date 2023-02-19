@@ -1,31 +1,293 @@
 <template>
   <div>
-    START VIZFOLD
+    <!-- <canvas ref="container" :id="id" class="b-1 b-solid b-red"></canvas> -->
+    <canvas
+      ref="container"
+      class="mt-5 mb-2 b-1 b-solid b-truegray-900 dark:b-truegray-600"
+      :style="styleCanvas"
+    ></canvas>
 
-    <br />
+    <!-- <br />
     {{ path }}
     <br />
     {{ step }}
     <br />
     {{ rotSpeed }}
-    <br />
-
-    END VIZFOLD
+    <br /> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { PropType, toRefs } from "vue";
-import { MapCoord } from "../store/snake";
+import { computed, onMounted, PropType, ref, toRefs, watch } from "vue";
+
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { Line2 } from "three/examples/jsm/lines/Line2";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
+
+import d3 from "../assets/d3";
+import { MapCoord, Pos } from "../store/snake";
 
 const props = defineProps({
   path: { type: Object as PropType<MapCoord>, required: true },
-  step: { type: Number, required: false, default: 0 },
-  rotSpeed: { type: Number, required: false, default: 0 },
+  step: { type: Number, required: false, default: 26 },
+  rotSpeed: { type: Number, required: false, default: 1 },
+  rotUnit: { type: Number, required: false, default: 2 }, // deg per sec
+  width: { type: Number, required: false, default: 600 },
+  height: { type: Number, required: false, default: 600 },
 });
 const { path, step, rotSpeed } = toRefs(props);
 
-console.log({ path, step, rotSpeed });
+const styleCanvas = ref(`width: ${props.width}px; height: ${props.height}px;`);
+
+const container = ref(null); // canvas ref
+
+let renderer: THREE.WebGLRenderer,
+  scene: THREE.Scene,
+  camera: THREE.PerspectiveCamera,
+  controls: OrbitControls,
+  matLine: LineMaterial;
+
+let rendererWidth: number, rendererHeight: number;
+
+const init = () => {
+  renderer = new THREE.WebGLRenderer({
+    canvas: container.value as HTMLCanvasElement,
+    antialias: true,
+  });
+
+  rendererWidth = props.width;
+  rendererHeight = props.height;
+
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setClearColor(0x333333, 1);
+  renderer.setSize(rendererWidth, rendererHeight);
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(33, 1, 1, 100);
+  camera.position.set(-35, 25, 50);
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.minDistance = 5;
+  controls.maxDistance = 80;
+};
+
+const S = 10;
+const T = S / 7;
+const scale = (c: number) => S * (c - 1);
+
+const addSnakeToScene = (snake: ISnake) => {
+  const { line, cubelets } = snake;
+  if (line) scene.add(line);
+  cubelets.forEach((e) => scene.add(e));
+};
+
+const removeSnakeFromScene = () => {
+  const line = scene.getObjectByName("snake-line");
+  scene.remove(line);
+
+  d3.range(1, 27 + 1).forEach((i) => {
+    const cubelet = scene.getObjectByName(`snake-cubelet-${i}`);
+    if (cubelet) scene.remove(cubelet);
+  });
+};
+
+interface ISnake {
+  line: Line2;
+  cubelets: THREE.Group[];
+}
+
+const buildSnake = (): ISnake => {
+  const positions = [];
+  const colors = [];
+
+  const points = d3
+    .range(1, path.value.size + 1)
+    .filter((i) => i <= step.value + 1)
+    .map((k) => {
+      const pos = path.value.get(k) as Pos;
+      const point = new THREE.Vector3(
+        scale(pos[0]),
+        scale(pos[1]),
+        scale(pos[2])
+      );
+      return point;
+    });
+
+  const cubelets = points.map((e, i) => buildCube(e, i + 1));
+
+  let line: Line2 | null;
+
+  if (points.length > 1) {
+    const spline = new THREE.CatmullRomCurve3(points);
+    const divisions = Math.round(points.length - 1);
+    //   const divisions = Math.round(12 * points.length);
+    const point = new THREE.Vector3();
+
+    const interpol = d3.interpolateHslLong("red", "blue");
+
+    for (let i = 0, l = divisions; i <= l; i++) {
+      const t = i / l;
+      spline.getPoint(t, point);
+      positions.push(point.x, point.y, point.z);
+      const c = d3.hsl(interpol(t)).rgb();
+      colors.push(c.r / 255, c.g / 255, c.b / 255);
+    }
+
+    const geometry = new LineGeometry();
+    geometry.setPositions(positions);
+    geometry.setColors(colors);
+
+    matLine = new LineMaterial({
+      color: 0xffffff,
+      linewidth: 5,
+      vertexColors: true,
+      dashed: false,
+      alphaToCoverage: false,
+    });
+
+    line = new Line2(geometry, matLine);
+    line.name = "snake-line";
+    line.computeLineDistances();
+    line.scale.set(1, 1, 1);
+  } else {
+    line = null;
+  }
+
+  return { line, cubelets };
+};
+
+const buildCube = (vec: THREE.Vector3, no: number) => {
+  const geometry = new THREE.BoxGeometry(T, T, T);
+  const material = buildFaceMaterial("#156289", String(no));
+
+  const cube = new THREE.Mesh(geometry, material);
+
+  const edges = new THREE.EdgesGeometry(geometry);
+  const lineMaterial = new THREE.LineBasicMaterial({
+    color: 0xffffff,
+    transparent: false,
+    opacity: 0.8,
+    linewidth: 1,
+  });
+  const line = new THREE.LineSegments(edges, lineMaterial);
+
+  const group = new THREE.Group();
+  group.add(cube);
+  group.add(line);
+
+  group.position.x = vec.x;
+  group.position.y = vec.y;
+  group.position.z = vec.z;
+
+  group.name = `snake-cubelet-${no}`;
+  return group;
+};
+
+const buildFaceMaterial = (
+  color: string,
+  text: string
+): THREE.MeshBasicMaterial => {
+  const ctx = document
+    .createElement("canvas")
+    .getContext("2d") as CanvasRenderingContext2D;
+  const size = 200;
+  const fontSize = 190;
+  ctx.canvas.width = size;
+  ctx.canvas.height = size;
+
+  drawFacelet(ctx, { x: 0, y: 0 }, size, fontSize, color, text);
+
+  const texture = new THREE.CanvasTexture(ctx.canvas);
+  texture.minFilter = THREE.LinearFilter;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+
+  const mat = new THREE.MeshBasicMaterial({
+    map: texture,
+    side: THREE.DoubleSide,
+    transparent: false,
+    depthWrite: true,
+  });
+  return mat;
+};
+
+const drawFacelet = (
+  ctx: CanvasRenderingContext2D,
+  pos: { x: number; y: number },
+  size: number,
+  fontSize: number,
+  color: string,
+  text: string
+) => {
+  ctx.save();
+  ctx.translate(pos.x, pos.y);
+
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.translate(size / 2, 0);
+
+  ctx.font = `${fontSize}px serif`;
+
+  ctx.fillStyle = "white";
+
+  ctx.fillText(text, 0, size / 2);
+  ctx.restore();
+
+  return ctx.canvas;
+};
+
+const maxFPS = 60;
+const timeStep = 1000 / maxFPS;
+let lastFrameTimeMs = 0; // The last time the loop was run
+
+const axisY = new THREE.Vector3(0, 1, 0).normalize();
+const rad = computed(
+  () => (rotSpeed.value * props.rotUnit * (2 * Math.PI)) / 360 / timeStep
+);
+
+const vizLoop = (timestamp: number) => {
+  if (timestamp < lastFrameTimeMs + timeStep) {
+    requestAnimationFrame(vizLoop);
+    return;
+  }
+  lastFrameTimeMs = timestamp;
+
+  matLine.resolution.set(rendererWidth, rendererHeight); // resolution of the viewport
+  renderer.render(scene, camera);
+
+  scene.rotateOnAxis(axisY, rad.value);
+
+  window.requestAnimationFrame(vizLoop);
+};
+
+const update = () => {
+  removeSnakeFromScene();
+  const snake = buildSnake();
+  addSnakeToScene(snake);
+  vizLoop(0);
+};
+
+onMounted(() => {
+  init();
+});
+
+watch(path, () => {
+  if (!path.value.size) return;
+
+  update();
+});
+
+watch(step, () => {
+  if (!path.value.size) return;
+
+  update();
+});
 </script>
 
 <style scoped></style>

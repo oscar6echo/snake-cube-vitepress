@@ -35,7 +35,7 @@
         type="range"
         :min="0"
         :max="rangeMax"
-        v-model="rangePos"
+        v-model.number="rangePos"
         :step="1"
         :class="styleRange"
         :style="widthRange"
@@ -106,7 +106,10 @@ const output = computed(() =>
   values.value && values.value.length ? props.values[rangePos.value].text : ""
 );
 
-watch(initial, () => (rangePos.value = initial.value));
+watch(initial, () => {
+  rangePos.value = initial.value;
+  console.log({ rangePos: rangePos.value, initial: initial.value });
+});
 watch(rangePos, () => {
   emit(
     "update:modelValue",
@@ -127,6 +130,7 @@ onMounted(() => {
   _bounce.value = props.bounce;
   _loop.value = props.loop;
   widthRange.value = `width: ${props.width}px;`;
+  rangePos.value = initial.value;
 });
 
 let timerId = null;
