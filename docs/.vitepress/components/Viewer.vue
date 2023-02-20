@@ -148,11 +148,11 @@ import Player from "./Player.vue";
 import VizFlat from "./VizFlat.vue";
 import VizFold from "./VizFold.vue";
 
-const pathSteps = d3.range(1, 27 + 1);
-const pathStepsOptions = pathSteps.map((e) => ({ value: e, text: String(e) }));
-
 const store = useSnakeStore();
 store.loadData();
+
+const pathSteps = d3.range(1, 27 + 1);
+const pathStepsOptions = pathSteps.map((e) => ({ value: e, text: String(e) }));
 
 const styleBtnTxt = ref(
   buildStyle([

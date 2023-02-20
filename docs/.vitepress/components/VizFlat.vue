@@ -19,7 +19,7 @@
 import { computed, onMounted, ref, toRefs, watch } from "vue";
 
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import d3 from "../assets/d3";
 import { buildCube, initMsg } from "../common/threejs";

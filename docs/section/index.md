@@ -4,6 +4,13 @@
 
 ## Game
 
+---
+
+debug button:
+<Counter />
+
+---
+
 A **snake cube** is a sequence of 27 small cubes connected by an elastic that goes through each cube.  
 The elastic goes either straight through the cube, from one face to the opposite, or turns inside the cube and goes from one face to an adjacent one.
 
@@ -62,3 +69,9 @@ The following definition help clarify this document:
   - A **start position** and a **direction**.
 
 - **palindrome:**: A snake which sequence is the same as its reverse.
+
+<script setup lang="ts">
+
+import Counter from  '../.vitepress/components/Counter.vue'
+
+</script>

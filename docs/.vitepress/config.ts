@@ -3,7 +3,8 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: `Snake Cube`,
   description: "Exploration",
-
+  base: "/devbase/",
+  //   base: "https://github.com/pages/orga/repo",
   head: [
     ["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.ico" }],
     ["meta", { name: "theme-color", content: "#646cff" }],

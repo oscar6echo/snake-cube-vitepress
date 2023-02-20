@@ -28,13 +28,13 @@
     "@unocss/preset-uno": "^0.49.4",
     "@unocss/vite": "^0.49.4",
     "unocss": "^0.49.4",
+    "vite": "^4.1.3",
     "vitepress": "1.0.0-alpha.46"
   },
   "pnpm": {
     "peerDependencyRules": {
       "ignoreMissing": [
-        "@algolia/client-search",
-        "vite"
+        "@algolia/client-search"
       ]
     }
   },

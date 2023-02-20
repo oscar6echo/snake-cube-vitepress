@@ -66,7 +66,7 @@ let statsAll: ISnakeStats;
 let statsPal: ISnakeStats;
 let statsMisc: ISnakeMisc;
 
-const useSnakeStore = defineStore("poker", {
+const useSnakeStore = defineStore("snake", {
   state: (): {
     started: boolean;
     solutions: ISnakeSolutions;

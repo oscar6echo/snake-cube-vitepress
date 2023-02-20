@@ -11,10 +11,10 @@ Commands:
 pnpm install
 
 # dev
-pnpm run dev
+pnpm run doc:dev
 
 # build
-pnpm run build
+pnpm run doc:build
 
 # deploy
 # tbd
