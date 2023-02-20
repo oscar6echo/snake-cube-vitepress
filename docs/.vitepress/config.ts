@@ -1,13 +1,18 @@
 import { defineConfig } from "vitepress";
 
+// const base = "/testbase/";
+const base = "/snake-cube-vitepress/";
+// const base= "/pages/orga/repo";
+
 export default defineConfig({
   title: `Snake Cube`,
   description: "Exploration",
-  base: "/devbase/",
-  //   base: "https://github.com/pages/orga/repo",
+  base,
   head: [
-    ["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.ico" }],
-    ["meta", { name: "theme-color", content: "#646cff" }],
+    [
+      "link",
+      { rel: "icon", type: "image/svg+xml", href: `${base}favicon.ico` },
+    ],
   ],
 
   vue: {},
