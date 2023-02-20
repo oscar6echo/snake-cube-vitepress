@@ -18,7 +18,9 @@ For example, for `Sequence Start`: `0110` wil filter out all snakes whose sequen
 
 ## Explore
 
-<Viewer />
+<ClientOnly>
+    <Viewer />
+</ClientOnly>
 
 <script setup>
 

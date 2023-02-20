@@ -263,7 +263,7 @@ const snakeOptions = computed(() => {
 });
 
 const solutionsFiltered = computed(() => {
-  if (!store || !store.solutions) return new Map();
+  if (!store.solutions) return new Map();
 
   const m: typeof store.solutions = new Map();
 
