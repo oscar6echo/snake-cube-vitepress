@@ -17,9 +17,8 @@ pnpm run doc:dev
 pnpm run doc:build
 
 # deploy
-# tbd
-# deploy-ghp.sh
-# deploy-ghp.bat
+chmod +x deploy-ghp.sh
+./deploy-ghp.sh
 ```
 
 NOTE: Use [Volar Takeover Mode](https://vuejs.org/guide/typescript/overview.html#volar-takeover-mode).
