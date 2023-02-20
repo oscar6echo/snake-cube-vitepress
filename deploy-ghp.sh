@@ -10,7 +10,7 @@ git rm --cached -rf .
 git add deploy-ghp.sh
 git commit -m "Add deploy script"
 
-REM git clean -n
+# git clean -n
 git clean -f
 
 git rm --cached deploy-ghp.sh
@@ -27,7 +27,7 @@ echo .gitignore >.gitignore
     echo README.md
 } >>.gitignore
 
-cp -r docs/.vitepress/dist .
+cp -r docs/.vitepress/dist/* ./
 
 git add .
 git commit -m "Deploy"
