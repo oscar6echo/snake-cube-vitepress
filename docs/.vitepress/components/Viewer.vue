@@ -108,7 +108,6 @@
       :values="pathStepsOptions"
       :width="200"
       :index="true"
-      :initial.number="26"
     />
   </div>
   <div class="flex justify-start items-center mb-2">

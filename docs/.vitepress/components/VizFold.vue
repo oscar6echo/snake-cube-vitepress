@@ -142,7 +142,8 @@ const buildSnake = (): ISnake => {
       const t = i / l;
       spline.getPoint(t, point);
       positions.push(point.x, point.y, point.z);
-      const c = d3.hsl(interpol(t)).rgb();
+      //   const c = d3.hsl(interpol(t)).rgb();
+      const c = d3.hsl(interpol(t * (points.length / 27))).rgb();
       colors.push(c.r / 255, c.g / 255, c.b / 255);
     }
 

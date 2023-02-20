@@ -35,7 +35,7 @@
         type="range"
         :min="0"
         :max="rangeMax"
-        v-model.number="rangePos"
+        v-model.number="_rangePos"
         :step="1"
         :class="styleRange"
         :style="widthRange"
@@ -51,7 +51,7 @@ import { buildStyle } from "../common/util";
 
 const props = defineProps({
   values: { type: Array<{ value: any; text: string }>, required: true },
-  initial: { type: Number, required: false, default: 0 },
+  modelValue: { type: Number, required: false, default: 0 },
   forward: { type: Boolean, required: false, default: true },
   delay: { type: Number, required: false, default: 400 },
   speedFactor: { type: Number, required: false, default: 1.5 },
@@ -65,7 +65,7 @@ const props = defineProps({
   time: { type: Boolean, required: false, default: false },
   debug: { type: Boolean, required: false, default: false },
 });
-const { values, initial } = toRefs(props);
+const { values, modelValue } = toRefs(props);
 const emit = defineEmits(["update:modelValue"]);
 
 const styleIcon = ref(
@@ -95,7 +95,7 @@ const widthRange = ref("width: 300px;");
 const styleOutput = ref(buildStyle(["ml-2"]));
 
 const rangeMax = computed(() => values.value.length - 1);
-const rangePos = ref(0);
+const _rangePos = ref(0);
 const _playing = ref(false);
 const _delay = ref(100);
 const _forward = ref(true);
@@ -103,23 +103,22 @@ const _bounce = ref(false);
 const _loop = ref(false);
 
 const output = computed(() =>
-  values.value && values.value.length ? props.values[rangePos.value].text : ""
+  values.value && values.value.length ? props.values[_rangePos.value].text : ""
 );
 
-watch(initial, () => {
-  rangePos.value = initial.value;
-  console.log({ rangePos: rangePos.value, initial: initial.value });
+watch(modelValue, () => {
+  _rangePos.value = modelValue.value;
 });
-watch(rangePos, () => {
+watch(_rangePos, () => {
   emit(
     "update:modelValue",
-    props.index ? rangePos.value : props.values[rangePos.value].value
+    props.index ? _rangePos.value : props.values[_rangePos.value].value
   );
 });
 watch(values, () => {
   emit(
     "update:modelValue",
-    props.index ? rangePos.value : props.values[rangePos.value].value
+    props.index ? _rangePos.value : props.values[_rangePos.value].value
   );
 });
 
@@ -130,13 +129,12 @@ onMounted(() => {
   _bounce.value = props.bounce;
   _loop.value = props.loop;
   widthRange.value = `width: ${props.width}px;`;
-  rangePos.value = initial.value;
+  _rangePos.value = modelValue.value;
 });
 
 let timerId = null;
 
 const clickPlayPause = (): void => {
-  console.log("clickPlayPause");
   _playing.value = !_playing.value;
   if (_playing.value) {
     walk();
@@ -156,15 +154,15 @@ const stop = (): void => {
 
 const step = (): boolean => {
   if (_forward.value) {
-    if (rangePos.value < rangeMax.value) {
-      rangePos.value += 1;
+    if (_rangePos.value < rangeMax.value) {
+      _rangePos.value += 1;
     } else {
       if (_loop.value) {
         if (_bounce.value) {
-          rangePos.value = rangeMax.value - 1;
+          _rangePos.value = rangeMax.value - 1;
           _forward.value = false;
         } else {
-          rangePos.value = 0;
+          _rangePos.value = 0;
         }
       } else {
         _playing.value = false;
@@ -172,15 +170,15 @@ const step = (): boolean => {
       }
     }
   } else {
-    if (rangePos.value > 0) {
-      rangePos.value -= 1;
+    if (_rangePos.value > 0) {
+      _rangePos.value -= 1;
     } else {
       if (_loop.value) {
         if (_bounce.value) {
-          rangePos.value = 1;
+          _rangePos.value = 1;
           _forward.value = true;
         } else {
-          rangePos.value = rangeMax.value;
+          _rangePos.value = rangeMax.value;
         }
       } else {
         _playing.value = false;
@@ -193,7 +191,7 @@ const step = (): boolean => {
 
 const clickStop = (): void => {
   clearTimeout(timerId);
-  rangePos.value = 0;
+  _rangePos.value = 0;
   _playing.value = false;
 };
 const clickStepLeft = (): void => {
