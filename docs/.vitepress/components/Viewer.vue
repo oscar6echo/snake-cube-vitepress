@@ -139,6 +139,7 @@
 </template>
 
 <script setup lang="ts">
+import { inBrowser } from "vitepress";
 import { computed, ref } from "vue";
 import d3 from "../assets/d3";
 import { buildStyle, fmtNb } from "../common/util";
@@ -148,8 +149,11 @@ import Player from "./Player.vue";
 import VizFlat from "./VizFlat.vue";
 import VizFold from "./VizFold.vue";
 
-const store = useSnakeStore();
-store.loadData();
+let store: ReturnType<typeof useSnakeStore>;
+if (inBrowser && store == null) {
+  store = useSnakeStore();
+  store.loadData();
+}
 
 const pathSteps = d3.range(1, 27 + 1);
 const pathStepsOptions = pathSteps.map((e) => ({ value: e, text: String(e) }));
@@ -259,9 +263,9 @@ const snakeOptions = computed(() => {
 });
 
 const solutionsFiltered = computed(() => {
-  const m: typeof store.solutions = new Map();
+  if (!store || !store.solutions) return new Map();
 
-  if (!store.solutions) return m;
+  const m: typeof store.solutions = new Map();
 
   for (const [seqS, v] of store.solutions) {
     const seqN = v.sequence;

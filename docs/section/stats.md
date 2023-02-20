@@ -69,30 +69,34 @@ In other words, plausible candidates make it quite often.
 
 <script setup lang="ts">
 
+import { inBrowser } from 'vitepress'
 import { computed, ref } from 'vue'
 import { useSnakeStore } from '../.vitepress/store/snake'
 import { fmtNb, fmtPct } from '../.vitepress/common/util'
 import StatsTable from  '../.vitepress/components/StatsTable.vue'
 
-const store = useSnakeStore()
-store.loadData()
+let store: ReturnType<typeof useSnakeStore>;
+if (inBrowser && store == null) {
+  store = useSnakeStore();
+  store.loadData();
+}
 
-const nbSeq = computed(() => fmtNb(store.statsMisc?.nbSeq || 0));
-const nbSol = computed(() => fmtNb(store.statsMisc?.nbSol || 0));
+const nbSeq = computed(() => fmtNb(store?.statsMisc?.nbSeq || 0));
+const nbSol = computed(() => fmtNb(store?.statsMisc?.nbSol || 0));
 
-const nbEndCenter = computed(() => fmtNb(store.statsMisc?.nbEndCenter || 0));
-const nbEndFace = computed(() => fmtNb(store.statsMisc?.nbEndFace || 0));
-const nbEndEdge = computed(() => fmtNb(store.statsMisc?.nbEndEdge || 0));
-const nbEndCorner = computed(() => fmtNb(store.statsMisc?.nbEndCorner || 0));
+const nbEndCenter = computed(() => fmtNb(store?.statsMisc?.nbEndCenter || 0));
+const nbEndFace = computed(() => fmtNb(store?.statsMisc?.nbEndFace || 0));
+const nbEndEdge = computed(() => fmtNb(store?.statsMisc?.nbEndEdge || 0));
+const nbEndCorner = computed(() => fmtNb(store?.statsMisc?.nbEndCorner || 0));
 
-const fracEndCenter = computed(() => fmtPct(100*store.statsMisc?.fracEndCenter || 0));
-const fracEndFace = computed(() => fmtPct(100*store.statsMisc?.fracEndFace || 0));
-const fracEndEdge = computed(() => fmtPct(100*store.statsMisc?.fracEndEdge || 0));
-const fracEndCorner = computed(() => fmtPct(100* store.statsMisc?.fracEndCorner || 0));
+const fracEndCenter = computed(() => fmtPct(100*(store?.statsMisc?.fracEndCenter || 0) || 0));
+const fracEndFace = computed(() => fmtPct(100*(store?.statsMisc?.fracEndFace || 0) || 0));
+const fracEndEdge = computed(() => fmtPct(100*(store?.statsMisc?.fracEndEdge || 0) || 0));
+const fracEndCorner = computed(() => fmtPct(100*( store?.statsMisc?.fracEndCorner || 0) || 0));
 
-const nbCandidate = computed(() => fmtNb(store.statsMisc?.nbCandidate || 0));
-const nbPlausible = computed(() => fmtNb(store.statsMisc?.nbPlausible || 0));
-const fracPlausibleOverCandidate = computed(() => fmtPct(100*store.statsMisc?.fracPlausibleOverCandidate || 0));
-const fracRealOverPlausible = computed(() => fmtPct(100*store.statsMisc?.fracRealOverPlausible || 0));
+const nbCandidate = computed(() => fmtNb(store?.statsMisc?.nbCandidate || 0));
+const nbPlausible = computed(() => fmtNb(store?.statsMisc?.nbPlausible || 0));
+const fracPlausibleOverCandidate = computed(() => fmtPct(100*(store?.statsMisc?.fracPlausibleOverCandidate || 0) || 0));
+const fracRealOverPlausible = computed(() => fmtPct(100*(store?.statsMisc?.fracRealOverPlausible || 0) || 0));
 
 </script>

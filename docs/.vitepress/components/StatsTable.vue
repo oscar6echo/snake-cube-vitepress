@@ -4,13 +4,18 @@
 
 <script setup lang="ts">
 import * as Plot from "@observablehq/plot";
-import { useData } from "vitepress";
+import { inBrowser, useData } from "vitepress";
 import { computed, onMounted, ref, watch } from "vue";
 
 import d3 from "../assets/d3";
 import { ISnakeStats, useSnakeStore } from "../store/snake";
 
-const store = useSnakeStore();
+let store: ReturnType<typeof useSnakeStore>;
+if (inBrowser && store == null) {
+  store = useSnakeStore();
+  store.loadData();
+}
+
 const { isDark } = useData();
 
 const props = defineProps({
@@ -18,7 +23,7 @@ const props = defineProps({
 });
 
 const dataStore = computed(() =>
-  props.palindrome ? store.statsPal : store.statsAll
+  props.palindrome ? store?.statsPal : store?.statsAll
 );
 
 const id = ref(`plot-stats-${props.palindrome}`);
