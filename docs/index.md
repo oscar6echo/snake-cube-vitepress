@@ -29,7 +29,7 @@ features:
 ---
 
 <script setup lang="ts">
-
+// import Counter from  './.vitepress/components/Counter.vue'
 console.log('root index')
 
 </script>

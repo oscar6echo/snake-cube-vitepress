@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, toRefs, watch } from "vue";
+import { computed, nextTick, onMounted, ref, toRefs, watch } from "vue";
 import { buildStyle } from "../common/util";
 
 const props = defineProps({
@@ -94,7 +94,6 @@ const styleRange = ref(buildStyle(["accent-coolgray"]));
 const widthRange = ref("width: 300px;");
 const styleOutput = ref(buildStyle(["ml-2"]));
 
-const rangeMax = computed(() => values.value.length - 1);
 const _rangePos = ref(0);
 const _playing = ref(false);
 const _delay = ref(100);
@@ -102,8 +101,10 @@ const _forward = ref(true);
 const _bounce = ref(false);
 const _loop = ref(false);
 
+const rangeMax = computed(() => values.value.length - 1);
+
 const output = computed(() =>
-  values.value && values.value.length ? props.values[_rangePos.value].text : ""
+  values.value && values.value.length ? values.value[_rangePos.value].text : ""
 );
 
 watch(modelValue, () => {
@@ -112,13 +113,20 @@ watch(modelValue, () => {
 watch(_rangePos, () => {
   emit(
     "update:modelValue",
-    props.index ? _rangePos.value : props.values[_rangePos.value].value
+    props.index ? _rangePos.value : values.value[_rangePos.value].value
   );
 });
-watch(values, () => {
+watch(values, async () => {
+  if (modelValue.value && rangeMax.value) {
+    // --------------- ARTIFICIAL TRIGGER
+    _rangePos.value += 1;
+    await nextTick();
+    _rangePos.value -= 1;
+  }
+
   emit(
     "update:modelValue",
-    props.index ? _rangePos.value : props.values[_rangePos.value].value
+    props.index ? _rangePos.value : values.value[_rangePos.value].value
   );
 });
 
@@ -129,7 +137,7 @@ onMounted(() => {
   _bounce.value = props.bounce;
   _loop.value = props.loop;
   widthRange.value = `width: ${props.width}px;`;
-  _rangePos.value = modelValue.value;
+  //   _rangePos.value = modelValue.value;
 });
 
 let timerId = null;

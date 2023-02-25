@@ -31,13 +31,13 @@ import { MapCoord, Pos } from "../store/snake";
 const props = defineProps({
   path: { type: Object as PropType<MapCoord>, required: true },
   step: { type: Number, required: false, default: 26 },
-  curvy: { type: Boolean, required: false, default: false },
+  curved: { type: Boolean, required: false, default: false },
   rotSpeed: { type: Number, required: false, default: 1 },
   rotUnit: { type: Number, required: false, default: 2 }, // deg per sec ?
   width: { type: Number, required: false, default: 600 },
   height: { type: Number, required: false, default: 600 },
 });
-const { path, step, curvy, rotSpeed } = toRefs(props);
+const { path, step, curved, rotSpeed } = toRefs(props);
 
 const styleCanvas = ref(`width: ${props.width}px; height: ${props.height}px;`);
 
@@ -129,7 +129,7 @@ const buildSnake = (): ISnake => {
     const spline = new THREE.CatmullRomCurve3(points);
 
     let divisions: number;
-    if (curvy.value) {
+    if (curved.value) {
       divisions = Math.round(12 * points.length);
     } else {
       divisions = Math.round(points.length - 1);
@@ -217,7 +217,7 @@ watch(step, () => {
   if (!isDefinedPath.value) return;
   update();
 });
-watch(curvy, () => {
+watch(curved, () => {
   if (!isDefinedPath.value) return;
   update();
 });

@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { onActivated, onDeactivated, onMounted, onUnmounted, ref } from "vue";
 
 const count = ref(0);
 
@@ -21,5 +21,15 @@ onMounted(() => {
 
 onUnmounted(() => {
   console.log("onUnmounted");
+});
+
+onActivated(() => {
+  console.log("onActivated");
+  console.log(count.value);
+});
+
+onDeactivated(() => {
+  console.log("onDeactivated");
+  console.log(count.value);
 });
 </script>

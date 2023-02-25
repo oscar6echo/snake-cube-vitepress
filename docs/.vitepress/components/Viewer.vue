@@ -81,7 +81,7 @@
   <VizFold
     :path="selectedPath"
     :step="pathStep"
-    :curvy="pathCurvy"
+    :curved="pathCurved"
     :rotSpeed="rotSpeed"
   />
 
@@ -89,13 +89,13 @@
     <button :class="styleBtnTxt2">Rotation Speed:</button>
     <ButtonRotation v-model="rotSpeed" class="mr-4" />
 
-    <button :class="styleBtnTxt">Curvyy Path:</button>
-    <select v-model="pathCurvy" :class="styleSelect">
+    <button :class="styleBtnTxt">Curved Path:</button>
+    <select v-model="pathCurved" :class="styleSelect">
       <option
         v-for="(value, i) in [true, false]"
         :key="i"
         :value="value"
-        :active="value === pathCurvy"
+        :active="value === pathCurved"
       >
         {{ value }}
       </option>
@@ -119,6 +119,7 @@
       :index="true"
     />
   </div>
+
   <!-- 
   <br />
   {{ rotSpeed }}
@@ -140,10 +141,11 @@
 
 <script setup lang="ts">
 import { inBrowser } from "vitepress";
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import d3 from "../assets/d3";
 import { buildStyle, fmtNb } from "../common/util";
 import { MapCoord, useSnakeStore } from "../store/snake";
+import { IStateViewer, useStateViewer } from "../store/state-viewer";
 import ButtonRotation from "./ButtonRotation.vue";
 import Player from "./Player.vue";
 import VizFlat from "./VizFlat.vue";
@@ -154,6 +156,8 @@ if (inBrowser && store == null) {
   store = useSnakeStore();
   store.loadData();
 }
+
+const state = useStateViewer();
 
 const pathSteps = d3.range(1, 27 + 1);
 const pathStepsOptions = pathSteps.map((e) => ({ value: e, text: String(e) }));
@@ -202,9 +206,10 @@ const selectedSnake = ref("");
 const fSnakeSort = ref("nb Sol >");
 const nTruncate = ref(2000);
 const pathStep = ref(26);
-const pathCurvy = ref(false);
+const pathCurved = ref(false);
 const rotSpeed = ref(1);
-const selectedSolution = ref(0 as number);
+const selectedSolution = ref(0);
+const mounting = ref(true);
 
 const nbSolOptions = computed(() => {
   if (solutionsFiltered.value.size === 0) return [null];
@@ -292,7 +297,7 @@ const snakeSolutionsOptions = computed(() => {
   if (!selectedSnake.value) return [];
 
   const { solutions } = solutionsFiltered.value.get(selectedSnake.value);
-  return solutions.map((e, i) => ({
+  return solutions.map((e: any, i: number) => ({
     value: e.path,
     text: `${i + 1}/${solutions.length}`,
   }));
@@ -304,6 +309,62 @@ const selectedPath = computed((): MapCoord => {
   if (!selectedSnake.value) return m;
 
   return snakeSolutionsOptions.value[selectedSolution.value].value;
+});
+
+const reset = () => {
+  if (mounting.value) {
+    console.log("VIEWER reset");
+    selectedSnake.value = "";
+    selectedSolution.value = 0;
+  }
+};
+
+watch(fNbSol, () => reset());
+watch(fNbStraight, () => reset());
+watch(fPal, () => reset());
+watch(fSeqStart, () => reset());
+
+onMounted(() => {
+  console.log("VIEWER onMounted");
+
+  if (!state.empty) {
+    console.log("VIEWER load state from store");
+
+    const s = state.data;
+    console.log(s);
+
+    fNbSol.value = s.fNbSol;
+    fNbStraight.value = s.fNbStraight;
+    fPal.value = s.fPal;
+    fSeqStart.value = s.fSeqStart;
+    fSnakeSort.value = s.fSnakeSort;
+    selectedSnake.value = s.selectedSnake;
+    rotSpeed.value = s.rotSpeed;
+    pathCurved.value = s.pathCurved;
+    pathStep.value = s.pathStep;
+    selectedSolution.value = s.selectedSolution;
+
+    mounting.value = false;
+  }
+});
+
+onUnmounted(() => {
+  console.log("VIEWER onUnmounted");
+
+  const s: IStateViewer = {
+    fNbSol: fNbSol.value,
+    fNbStraight: fNbStraight.value,
+    fPal: fPal.value,
+    fSeqStart: fSeqStart.value,
+    fSnakeSort: fSnakeSort.value,
+    selectedSnake: selectedSnake.value,
+    rotSpeed: rotSpeed.value,
+    pathCurved: pathCurved.value,
+    pathStep: pathStep.value,
+    selectedSolution: selectedSolution.value,
+  };
+
+  state.save(s);
 });
 </script>
 
