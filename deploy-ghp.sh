@@ -16,18 +16,12 @@ git clean -f
 git rm --cached deploy-ghp.sh
 git commit -m "Remove deploy script"
 
-echo .gitignore >.gitignore
-{
-    echo docs
-    echo node_modules
-    echo wip
-    echo deploy-ghp.sh
-    echo package.json
-    echo pnpm-lock.yaml
-    echo README.md
-} >>.gitignore
+# put all repo files/dif in .gitignore
+ls -aI .gitignore -I . -I .. > .gitignore
 
+# only files/dir from ./docs/.vitepress/dist will be commited
 cp -r docs/.vitepress/dist/* ./
+
 
 git add .
 git commit -m "Deploy"
