@@ -8,6 +8,7 @@ export default defineConfig({
   title: `Snake Cube`,
   description: "Exploration",
   base,
+  appearance: "dark",
   head: [
     [
       "link",

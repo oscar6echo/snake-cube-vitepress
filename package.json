@@ -4,7 +4,7 @@
   "description": "Snake Cube: An exhaustive search",
   "main": "index.js",
   "scripts": {
-    "doc:dev": "vitepress dev docs --port 3000",
+    "doc:dev": "vitepress dev docs --port 3001",
     "doc:build": "vitepress build docs",
     "doc:preview": "vitepress preview docs"
   },
@@ -16,20 +16,20 @@
   "author": "oscar6echo",
   "license": "MIT",
   "devDependencies": {
-    "@iconify/json": "^2.2.27",
+    "@iconify/json": "^2.2.36",
     "@types/d3-array": "^3.0.4",
     "@types/d3-color": "^3.1.0",
     "@types/d3-format": "^3.0.1",
     "@types/d3-interpolate": "^3.0.1",
-    "@types/d3-selection": "^3.0.4",
+    "@types/d3-selection": "^3.0.5",
     "@types/three": "^0.149.0",
-    "@unocss/preset-attributify": "^0.50.1",
-    "@unocss/preset-icons": "^0.50.1",
-    "@unocss/preset-uno": "^0.50.1",
-    "@unocss/vite": "^0.50.1",
-    "unocss": "^0.50.1",
-    "vite": "^4.1.4",
-    "vitepress": "1.0.0-alpha.47"
+    "@unocss/preset-attributify": "^0.50.6",
+    "@unocss/preset-icons": "^0.50.6",
+    "@unocss/preset-uno": "^0.50.6",
+    "@unocss/vite": "^0.50.6",
+    "unocss": "^0.50.6",
+    "vite": "^4.2.0",
+    "vitepress": "1.0.0-alpha.60"
   },
   "pnpm": {
     "peerDependencyRules": {
@@ -39,14 +39,14 @@
     }
   },
   "dependencies": {
-    "@observablehq/plot": "^0.6.3",
+    "@observablehq/plot": "^0.6.4",
     "d3-array": "^3.2.2",
     "d3-color": "^3.1.0",
     "d3-format": "^3.1.0",
     "d3-interpolate": "^3.0.1",
     "d3-selection": "^3.0.0",
-    "pinia": "^2.0.32",
-    "three": "^0.150.0",
+    "pinia": "^2.0.33",
+    "three": "^0.150.1",
     "vue": "^3.2.47"
   }
 }
