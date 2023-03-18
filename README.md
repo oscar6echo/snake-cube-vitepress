@@ -18,6 +18,7 @@ pnpm run doc:build
 
 # deploy
 chmod +x deploy-ghp.sh
+# warning: run after commit
 ./deploy-ghp.sh
 ```
 
