@@ -1,7 +1,5 @@
 # Snake Cube
 
-[[toc]]
-
 ## Game
 
 A **snake cube** is a sequence of 27 small cubes connected by an elastic that goes through each cube.  

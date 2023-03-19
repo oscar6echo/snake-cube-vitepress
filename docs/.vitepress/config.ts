@@ -21,6 +21,8 @@ export default defineConfig({
   themeConfig: {
     logo: "/img/snake-cube-done.jpg",
 
+    outlineTitle: "Page Contents",
+
     socialLinks: [
       {
         icon: "github",

@@ -1,7 +1,5 @@
 # Stats
 
-[[toc]]
-
 ## Observations
 
 We can make the following observations after the full search:
