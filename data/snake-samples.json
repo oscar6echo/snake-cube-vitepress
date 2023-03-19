@@ -1,0 +1,34 @@
+{
+  "snakes": [
+    {
+      "name": "Kev's Kubes",
+      "sequence": "001110101111111111111010110",
+      "color": "grey"
+    },
+    {
+      "name": "Cubra Purple",
+      "sequence": "011110101111111111101011110",
+      "color": "purple"
+    },
+    {
+      "name": "Cubra Orange",
+      "sequence": "001011110111111110111011100",
+      "color": "orange"
+    },
+    {
+      "name": "Cubra Blue",
+      "sequence": "001010101111010111011011100",
+      "color": "blue"
+    },
+    {
+      "name": "Cubra Green",
+      "sequence": "001010110101011110110110100",
+      "color": "green"
+    },
+    {
+      "name": "Cubra Red",
+      "sequence": "001111111110111111101011110",
+      "color": "red"
+    }
+  ]
+}

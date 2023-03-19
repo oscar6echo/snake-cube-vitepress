@@ -1,0 +1,4 @@
+deploy-ghp.sh
+docs
+.git
+node_modules
