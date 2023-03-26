@@ -1,32 +1,32 @@
 <template>
   <div class="flex items-center h-5">
-    <button type="button" :class="styleIcon" @click="clickPlayPause">
+    <button :class="styleIcon" @click="clickPlayPause">
       <div v-if="!_playing" class="i-fa6-solid:play"></div>
       <div v-else class="i-fa6-solid:pause"></div>
     </button>
-    <button type="button" :class="styleIcon" @click="clickStop">
+    <button :class="styleIcon" @click="clickStop">
       <div class="i-fa6-solid:stop"></div>
     </button>
-    <button type="button" :class="styleIcon" @click="clickStepLeft">
+    <button :class="styleIcon" @click="clickStepLeft">
       <div class="i-fa6-solid:backward-step"></div>
     </button>
-    <button type="button" :class="styleIcon" @click="clickStepRight">
+    <button :class="styleIcon" @click="clickStepRight">
       <div class="i-fa6-solid:forward-step"></div>
     </button>
-    <button type="button" :class="styleIcon" @click="clickSpeedUp">
+    <button :class="styleIcon" @click="clickSpeedUp">
       <div class="i-fa6-solid:chevron-up"></div>
     </button>
-    <button type="button" :class="styleIcon" @click="clickSpeedDown">
+    <button :class="styleIcon" @click="clickSpeedDown">
       <div class="i-fa6-solid:chevron-down"></div>
     </button>
-    <button type="button" :class="styleIcon" @click="clickToggleWay">
+    <button :class="styleIcon" @click="clickToggleWay">
       <div v-if="_forward" class="i-fa6-solid:arrow-right"></div>
       <div v-else class="i-fa6-solid:arrow-left"></div>
     </button>
-    <button type="button" :class="styleIconBounce" @click="clickToggleBounce">
+    <button :class="styleIconBounce" @click="clickToggleBounce">
       <div class="i-fa-solid:exchange-alt"></div>
     </button>
-    <button type="button" :class="styleIconLoop" @click="clickToggleLoop">
+    <button :class="styleIconLoop" @click="clickToggleLoop">
       <div class="i-fa-solid:redo"></div>
     </button>
 
